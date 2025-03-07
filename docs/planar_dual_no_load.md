@@ -7,7 +7,7 @@ layout: default
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 
-# 1: Dual, no load
+# Dual pvtol, no load
 
 
 <figure>
@@ -18,6 +18,9 @@ layout: default
 <br>
 <p></p>
 
+
+<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#lagrange_derivation">Lagrange model derivation</button>
+<div id="lagrange_derivation" class="collapse derivation" markdown="1">
   * Generalized coordinates
   
 $$q=\begin{pmatrix}x&z&\theta&\phi&\theta_2\end{pmatrix}^T $$
@@ -129,7 +132,10 @@ $$
 \frac{d}{dt}\left( \frac{\partial{\mathcal{L}}}{\partial{\dot{\phi}}} \right) - \frac{\partial{\mathcal{L}}}{\partial{\phi}} = M_\phi
 $$
 
+$$
+l \ddot{\phi} - \sin\phi \ddot{x} + \cos \phi \ddot{z} = -\cos\phi g + \cos(\phi+\theta_2) \frac{f_{l2}+f_{r2}}{m_2}
+$$
 
-FIXME
 
 
+</div>
