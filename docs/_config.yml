@@ -1,0 +1,10 @@
+name: "These Ricardo"
+description: "These Ricardo"
+
+url: "http://somewhere.someplace.fr"
+
+#markdown: rdiscount
+#markdown: kramdown
+#permalink: pretty
+#highlighter: pygments
+#highlighter: rouge

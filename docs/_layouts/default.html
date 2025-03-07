@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site.name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    
+    <meta name="description" content="{{ site.description }}">
+    
+    <link href="{{ site.url }}/css/misc.css" rel="stylesheet">
+    <script src="{{ site.url }}/css/misc.js"></script>
+
+    <script type="text/javascript"
+       src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+    <script src="https://www.recherche.enac.fr/~drouin/css/my_mathjax.js"></script>
+
+  </head>
+
+  <body>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+	  TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+
+ <script type="math/tex; mode=display">
+    \newcommand{\vect}[1]{\underline{#1}}                           % vector
+    \newcommand{\mat}[1]{\mathbf{#1}}                               % matrices
+    \newcommand{\est}[1]{\hat{#1}}                                  % estimate
+    \newcommand{\err}[1]{\tilde{#1}}                                % error
+    \newcommand{\esterr}[1]{\tilde{#1}}                             % error
+    \newcommand{\pd}[2]{\frac{\partial{#1}}{\partial{#2}}}          % partial derivatives
+    \newcommand{\transp}[1]{#1^{T}}                                 % transpose
+    \newcommand{\inv}[1]{#1^{-1}}                                   % invert
+    \newcommand{\norm}[1]{|{#1}|}                                   % norm
+    \newcommand{\esp}[1]{\mathbb{E}\left[{#1}\right]}               % expectation
+    \newcommand{\espsq}[1]{\mathbb{E}\left[{#1}\transp{#1}\right]}  % expectation of squared quantity (variance)
+    \newcommand{\identity}[0]{\mathbb{I}}                           % identity
+    \newcommand{\jac}[3]{\frac{\partial{#1}}{\partial{#2}}|_{#3}}   % Jacobian
+    \DeclareMathOperator{\Tr}{Tr}
+ </script>
+
+    <div class="container">
+
+      {{ content }}
+
+    </div>
+
+  </body>
+</html>
