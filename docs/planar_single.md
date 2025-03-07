@@ -5,7 +5,7 @@ layout: default
 
 
 <figure>
-	<img src="drawings/pvtol.png" alt="PVTOL schematics" width="360">
+	<img src="drawings/pvtol_single.png" alt="PVTOL schematics" width="360">
 	<figcaption>Fig1. - PVTOL schematics.</figcaption>
 </figure>
 

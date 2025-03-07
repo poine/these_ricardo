@@ -11,7 +11,7 @@ layout: default
 
 
 <figure>
-	<img src="drawings/pvtol_dual_3.png" alt="PVTOL schematics" width="464">
+	<img src="drawings/pvtol_dual_no_load.png" alt="PVTOL schematics" width="464">
 	<figcaption>Fig1. - dual PVTOL schematics, without load.</figcaption>
 </figure>
 

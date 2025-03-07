@@ -4,7 +4,7 @@ layout: default
 ---
 
 <figure>
-	<img src="drawings/pvtol_tether.png" alt="PVTOL schematics" width="262">
+	<img src="drawings/pvtol_single_point_load.png" alt="PVTOL schematics" width="262">
 	<figcaption>Fig1. - PVTOL with point mass load schematics.</figcaption>
 </figure>
 

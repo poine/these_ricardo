@@ -34,12 +34,12 @@ We present here a planar restriction of our VTOL model
 
 ## 4: [Dual tethered VTOL with point mass load](planar_dual_point_load)
 <figure>
-	<img src="drawings/pvtol_dual_1.png" alt="PVTOL schematics" width="262">
+	<img src="drawings/pvtol_dual_point_load.png" alt="PVTOL schematics" width="262">
 	<figcaption>Fig1. - dual PVTOL schematics, point load.</figcaption>
 </figure>
 
 ## 5: [Dual tethered VTOL with solid load](planar_dual_solid_load)
 <figure>
-	<img src="drawings/pvtol_dual_2.png" alt="PVTOL schematics" width="262">
+	<img src="drawings/pvtol_dual_solid_load.png" alt="PVTOL schematics" width="262">
 	<figcaption>Fig1. - dual PVTOL schematics, solid load.</figcaption>
 </figure>
