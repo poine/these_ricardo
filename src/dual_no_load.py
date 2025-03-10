@@ -26,7 +26,7 @@ class Param:
 
 
 class PVT:
-    s_x, s_z, s_ph, s_th, s_th2, s_xd, s_zd, s_phd, s_thd, s_th2d, s_size  = range(11) # state vector components
+    s_x, s_z, s_th, s_ph, s_th2, s_xd, s_zd, s_thd, s_phd, s_th2d, s_size  = range(11) # state vector components
     slice_pos, slice_kin, slice_dyn = slice(2), slice(5), slice(5, 11)
     i_fl1, i_fr1, i_fl2, i_fr2, i_size =  range(5)                                     # input vector components
 
@@ -49,13 +49,13 @@ class PVT:
         ut2b = (U[PVT.i_fl1]+U[PVT.i_fr1])/self.P.m2
         B = np.array([[self.P.a*phd**2*cph         -ut1*st1-ut2*st2],
                       [self.P.a*phd**2*sph-self.P.g+ut1*ct1+ut2*ct2],
-                      #[xd*phd*cph+zd*phd*sph]]) # FIXME
-                      [-self.P.g*cph+ut2b*np.cos(X[PVT.s_ph]+X[PVT.s_th2])]]) # FIXME
-        
+                      [-self.P.g*cph+ut2b*np.cos(X[PVT.s_ph]+X[PVT.s_th2])]])
+        xdd, zdd, phdd =  (invA@B).flatten()
         Xd = np.zeros(PVT.s_size)
         Xd[PVT.slice_kin] = X[PVT.slice_dyn]
         #breakpoint()
-        Xd[PVT.s_xd:PVT.s_phd+1] = (A@B).flatten()
+        Xd[PVT.s_xd:PVT.s_zd+1] = xdd, zdd### FIXME
+        Xd[PVT.s_phd] = phdd
         Xd[PVT.s_thd] = ud1
         Xd[PVT.s_th2d] = ud2
         return Xd
@@ -67,6 +67,12 @@ class PVT:
     def jac(self):
         Xe = np.zeros(PVT.s_size)
         return mu.num_jacobian(Xe, self.Ue, self.dyn)
+
+    def master_state(X): # x, z, theta, xd, zd, thd
+        return np.hstack((X[:PVT.s_th+1], X[PVT.s_xd:PVT.s_thd+1]))
+    def slave_state(X):  # phi, theta2, phid, theta2d
+        return np.hstack((X[PVT.s_ph:PVT.s_th2+1], X[PVT.s_phd:PVT.s_th2d+1]))
+
     
 
 def plot_trajectory(time, X, U, figure=None, axes=None):

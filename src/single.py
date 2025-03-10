@@ -11,8 +11,8 @@ import numpy as np, matplotlib.pyplot as plt
 '''  Parameters of the dynamic model '''
 class Param:
     def __init__(self, sat=None):
-        self.m     = 0.5     # mass in kg
-        self.l     = 0.2     # length in m
+        self.m     = 1.      # mass in kg
+        self.l     = 0.2     # arm length in m
         self.J     = 0.01    # inertia
         self.sat   = sat     # max thrust of motor in N
         self.g     = 9.81

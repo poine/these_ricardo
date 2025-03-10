@@ -33,19 +33,25 @@ def stepphi(t):
     X[PVT.PVT.s_ph] = mu.step(t, np.deg2rad(15))
     return X
 
+def rampphi(t, omega=0.25):
+    X = np.zeros(PVT.PVT.s_size)
+    X[PVT.PVT.s_ph] = np.sin(0.5*t)#omega*t
+    return X
+
 
 def sim_feedback(sp, dt=0.01):
     P = PVT.PVT()
     X0, Ue = np.zeros(P.s_size), P.Ue
     A, B = P.jac()
     #    s_x, s_z, s_ph, s_th, s_th2
-    Q = np.diag([3., 7., 10., 0.5, 0.5,
-                 0.25, 0.25, 0.25, 0.005, 0.005])
+    Q = np.diag([3., 7.,0.5, 10., 0.5,
+                 0.25, 0.25, 0.005, 0.25, 0.005])
     R = np.diag([0.5, 0.5, 0.5, 0.5])
     (K, X, E) = control.matlab.lqr(A, B, Q, R)
     poles, vect_p = np.linalg.eig(A-np.dot(B, K))
-    LOG.info('gain:\n{}'.format(K))
-    LOG.info('poles:\n{}'.format(poles))
+    with np.printoptions(precision=2, linewidth=200):
+        LOG.info('gain:\n{}'.format(K))
+        LOG.info('poles:\n{}'.format(poles))
 
     X0[P.s_th] = np.deg2rad(11.5)
     X0[P.s_th2] = np.deg2rad(-11.5)
@@ -66,10 +72,11 @@ def sim_feedback(sp, dt=0.01):
 def test_1(): sim_feedback(stepx)
 def test_2(): sim_feedback(stepz)
 def test_3(): sim_feedback(stepphi)
+def test_4(): sim_feedback(rampphi)
 
 def main(exp):
     logging.basicConfig(level=logging.INFO)
-    exps = [test_1, test_2, test_3]
+    exps = [test_1, test_2, test_3, test_4]
     exps[exp]()
 
 if __name__ == "__main__":
