@@ -8,7 +8,7 @@ layout: default
 	<figcaption>Fig1. - PVTOL with point mass load schematics.</figcaption>
 </figure>
 
-### 2.1: Model <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_tethered_pvtol_model">show</button>
+### 1: Model <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_tethered_pvtol_model">show</button>
 <div id="single_tethered_pvtol_model" class="collapse exemple" markdown="1">
 We will start by deriving a dynamic model for the PVTOL with pole system.
 
@@ -207,3 +207,15 @@ $$
 The system has full rank ( $$det(A) = 1$$ ).
 
 </div>
+
+<figure>
+	<img src="plots/single_point_load__open_loop.apng" alt="open loop" width="512">
+	<figcaption>Fig1. - open loop</figcaption>
+</figure>
+
+[code](https://github.com/poine/these_ricardo/blob/main/src/single_point_load.py)
+
+[code](https://github.com/poine/these_ricardo/blob/main/src/single_point_load_test_1.py)
+
+
+### 2: Control

@@ -7,22 +7,22 @@
 #
 #
 
-
-import numpy as np, scipy.integrate, matplotlib.pyplot as plt
-
+import sys, numpy as np, scipy.integrate, matplotlib.pyplot as plt
 
 import dual_no_load as PVT, misc_utils as mu
 
 def stepUt(P, t):
     U = np.array(P.Ue)
     ud1 = 0.005*np.sin(t+np.pi/2)
-    ut1 = 0.01
+    ut1 = 0.05
     U[P.i_fl1] += ud1+ut1; U[P.i_fr1] += -ud1+ut1
     ud2, ut2 = -ud1, ut1
+    ud2 = -0.005*np.sin(t+np.pi/2+0.005)
     U[P.i_fl2] += ud2+ut1; U[P.i_fr2] += -ud2+ut2
     return U
 
-def test_open_loop(dt=0.01):
+    
+def main(save=False, dt=0.01):
     P = PVT.PVT()
     X0, Ue = np.zeros(P.s_size), P.Ue
     X0[P.s_th] = np.deg2rad(11.5)
@@ -37,11 +37,10 @@ def test_open_loop(dt=0.01):
     U[-1] =  stepUt(P, time[-1])
     PVT.plot_trajectory(time, X, U)
     anim = PVT.animate(time, X, U, P)
+    if save:
+        mu.save_anim(mu.PLOT_DIR+'/dual_no_load__open_loop.apng', anim, None)
     plt.show()
-    
-def main():
-    test_open_loop()
 
 
 if __name__ == "__main__":
-    main()
+    main(save='-s' in sys.argv)

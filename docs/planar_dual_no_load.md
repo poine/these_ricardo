@@ -9,12 +9,12 @@ layout: default
 
 # Dual pvtol, no load
 
-
 <figure>
 	<img src="drawings/pvtol_dual_no_load.png" alt="PVTOL schematics" width="464">
 	<figcaption>Fig1. - dual PVTOL schematics, without load.</figcaption>
 </figure>
 
+### 1: Model
 <br>
 <p></p>
 
@@ -83,7 +83,7 @@ $$ \begin{align*}
 \frac{\partial{\mathcal{L}}}{\partial{\phi}} &=  -m_2l\left(\dot{\phi}(\dot{x}\cos\phi+\dot{z}\sin\phi) + g\cos\phi\right) \\
 \frac{\partial{\mathcal{L}}}{\partial{\theta_2}} &=  0 \\
 \frac{\partial{\mathcal{L}}}{\partial{\dot{x}}} &=  \left(m_1+m_2\right)\dot{x} - m_2l\dot{\phi}\sin\phi \\
-\frac{\partial{\mathcal{L}}}{\partial{\dot{z}}} &= \left(m_1+m_2\right)\dot{zz} + m_2l\dot{\phi}\cos\phi \\
+\frac{\partial{\mathcal{L}}}{\partial{\dot{z}}} &= \left(m_1+m_2\right)\dot{z} + m_2l\dot{\phi}\cos\phi \\
 \frac{\partial{\mathcal{L}}}{\partial{\dot{\theta}}} &=  J_1\dot{\theta} \\
 \frac{\partial{\mathcal{L}}}{\partial{\dot{\phi}}} &= m_2l\left(-\dot{x}\sin\phi +z\cos\phi+l\dot{\phi}\right) \\
 \frac{\partial{\mathcal{L}}}{\partial{\dot{\theta_2}}} &=  J_2\dot{\theta}
@@ -106,7 +106,7 @@ $$
 $$
 
 $$
- \left( m_1+m_2 \right) (\ddot{z}+g) - m_2l \left( \ddot{\phi}\cos\phi - \dot{\phi}^2\sin\phi \right) = (f_l+f_r)\cos\theta + (f_{l2}+f_{r2})\cos\theta_2
+ \left( m_1+m_2 \right) (\ddot{z}+g) + m_2l \left( \ddot{\phi}\cos\phi - \dot{\phi}^2\sin\phi \right) = (f_l+f_r)\cos\theta + (f_{l2}+f_{r2})\cos\theta_2
 $$
 
 {:start="3"}
@@ -139,3 +139,30 @@ $$
 
 
 </div>
+
+[code](https://github.com/poine/these_ricardo/blob/main/src/dual_no_load.py)
+
+<figure>
+	<img src="plots/dual_no_load__open_loop.apng" alt="open loop" width="512">
+	<figcaption>Fig1. - open loop</figcaption>
+</figure>
+
+[code](https://github.com/poine/these_ricardo/blob/main/src/dual_no_load_test_1.py)
+
+### 2: Control
+
+<figure>
+	<img src="plots/dual_no_load__state_feedback_1.apng" alt="open loop" width="512">
+	<figcaption>Fig1. - step</figcaption>
+</figure>
+
+<figure>
+	<img src="plots/dual_no_load__state_feedback_2.apng" alt="open loop" width="512">
+	<figcaption>Fig1. - step</figcaption>
+</figure>
+
+<figure>
+	<img src="plots/dual_no_load__state_feedback_3.apng" alt="open loop" width="512">
+	<figcaption>Fig1. - ramp</figcaption>
+</figure>
+[code](https://github.com/poine/these_ricardo/blob/main/src/dual_no_load_test_2.py)

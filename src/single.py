@@ -3,10 +3,11 @@
 
 '''
   Dynamic model of a planar VTOL
-  see: https://poine.github.io/ann_elucubrations/pvtol.html
+  see: https://poine.github.io/these_ricardo/planar_single
 '''
 
 import numpy as np, matplotlib.pyplot as plt
+import scipy.integrate
 
 '''  Parameters of the dynamic model '''
 class Param:
@@ -19,6 +20,7 @@ class Param:
 
 ''' State vector components '''
 sv_x, sv_z, sv_th, sv_xd, sv_zd, sv_thd, sv_size = np.arange(0,7)
+sv_slice_pos, sv_slice_vel = slice(2), slice(3,5)
 ''' Input vector components '''
 iv_f1, iv_f2, iv_size = np.arange(0,3)
 
@@ -39,6 +41,11 @@ def dyn(X, t, U, P):
     Xd[sv_thd] = P.l/P.J*ud
 
     return Xd    
+
+def disc_dyn(Xk, Uk, P, dt):
+    _unused, Xkp1 = scipy.integrate.odeint(dyn, Xk, [0, dt], args=(Uk,P))
+    return Xkp1
+
 
 def jacobian(Xe, Ue, P):
     """
@@ -97,32 +104,49 @@ def plot_trajectory(time, X, U=None, figure=None, axes=None, window_title="Traje
     if filename is not None: plt.savefig(filename)
     return figure, axes
 
+#
+# Animations
+#
+import matplotlib.animation as animation
+def extrema(arr, d=0): return np.min(arr)-d, np.max(arr)+d
+def compute_extends(X, P):
+    m_pos = X[:,sv_slice_pos]
+    (x_min, x_max), (y_min, y_max) = [extrema(m_pos[:,i], 1.5*P.l) for i in range(2)]
+    return (x_min, x_max), (y_min, y_max)
+def animate(time, X, U, Yc, P, title=None, _drawings=False, _imgs=True, figure=None, ax=None):
+    (_xmin, _xmax), (_ymin, _ymax) = compute_extends(X, P)
+    #_xmin, _xmax, _ymin, _ymax = -5, 5, -2, 2
+    fig = figure or plt.figure(figsize=(10., 4.))
+    if ax is None:
+        ax = fig.add_subplot(111, aspect='equal', autoscale_on=False, xlim=(_xmin, _xmax),
+                             ylim=(_ymin, _ymax), facecolor=(0.5, 0.9, 0.9))
+    time_template = 'time = {:0.1f}s'
+    time_text = ax.text(0.025, 0.92, 'Hello', transform=ax.transAxes)
+    _line_body, = ax.plot([], [], 'o-', lw=3, color='r', zorder=1)
+    _line_setpoint, = ax.plot([], [], 'o-', lw=1, color='b', zorder=1)
 
+    #breakpoint()
+    def init():
+        #print('in init')
+        _line_body.set_data([], [])
+        return time_text, _line_body
 
-"""
-Compute numerical jacobian 
-"""
-def num_jacobian(Xe, Ue, dyn):
-    s_size = len(Xe)
-    i_size = len(Ue)
-    epsilonX = (0.1*np.ones(s_size)).tolist()
-    dX = np.diag(epsilonX)
-    A = np.zeros((s_size, s_size))
-    for i in range(0, s_size):
-        dx = dX[i,:]
-        delta_f = dyn(Xe+dx/2, 0, Ue) - dyn(Xe-dx/2, 0, Ue)
-        delta_f = delta_f / dx[i]
-        A[:,i] = delta_f
+    def animate(i):
+        #print(f'in animate {i}')
+        p0 = X[i, :sv_th]
+        d = np.array([np.cos(X[i, sv_th]), np.sin(X[i, sv_th])])
+        p1, p2 = p0+P.l*d, p0-P.l*d
+        _line_body.set_data([p1[0], p0[0], p2[0]], [p1[1], p0[1], p2[1]])
+        time_text.set_text(time_template.format(i * dt))
+        p1 = p2 = Yc[i,0]
+        _line_setpoint.set_data([p1[0], p2[0]], [p1[1], p2[1]])
+        return time_text, _line_body, _line_setpoint
+     
+    dt = time[1]-time[0]
+    dt_mili = dt*1000#25
+    print(f'steps {len(time)} , {dt}, {dt_mili}')
+    anim = animation.FuncAnimation(fig, animate, np.arange(1, len(time)),
+                                   interval=dt_mili, blit=True, init_func=init, repeat_delay=200)
 
-    epsilonU = (0.1*np.ones(i_size)).tolist()
-    dU = np.diag(epsilonU)
-    B = np.zeros((s_size,i_size))
-    for i in range(0, i_size):
-        du = dU[i,:]
-        delta_f = dyn(Xe, 0, Ue+du/2) - dyn(Xe, 0, Ue-du/2)
-        delta_f = delta_f / du[i]
-        B[:,i] = delta_f
-
-    return A,B
-
+    return anim
 

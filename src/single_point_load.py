@@ -10,7 +10,7 @@ import misc_utils as mu
 '''
 
 Dynamic model for the PVTOL pole system.
-See https://poine.github.io/ann_elucubrations/pvtol_pole.html for equations
+See https://poine.github.io/these_ricardo/planar_single_point_load
 
 '''
 

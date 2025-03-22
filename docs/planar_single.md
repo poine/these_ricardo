@@ -12,7 +12,16 @@ layout: default
 ## 1: Model 
 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#newton_derivation">Newton derivation</button>
 <div id="newton_derivation" class="collapse derivation" markdown="1">
-Trivial
+
+Applying Newton's second law to our vehicle in ground frame, we get
+
+$$\begin{align*}
+m\ddot{x} &= (f_1+f_2)\sin(\theta) \\
+m\ddot{z} &= -mg + (f_1+f_2)\cos(\theta) \\
+J\ddot{\theta} &= d(-f_1+f_2)
+\end{align*}$$
+
+
 </div>
 
 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#lagrange_derivation">Lagrange derivation</button>
@@ -37,6 +46,7 @@ L &= T-V \\
 L &= \frac{1}{2} m(\dot{x}^2+\dot{z}^2) + \frac{1}{2} J \dot{\theta}^2 -  mgz
 \end{align*}$$
 
+### Partial derivatives
 
 <table>
 <tr><td>
@@ -58,7 +68,7 @@ $$
 </td></tr>
 </table>
 
-### Lagrange Equations
+### Lagrange equations
 
  *
  
@@ -87,8 +97,9 @@ $$
 $$
 
 $$
-J\ddot{\theta} = l \left( -f_1+f_2 \right)
+J\ddot{\theta} = d \left( -f_1+f_2 \right)
 $$
+
  </div>
  
  
@@ -105,14 +116,14 @@ $$
   \dot{\theta} \\
   -\frac{1}{m}  \sin{\theta} \left( f_1+f_2 \right) \\
   -g + \frac{1}{m}  \cos{\theta} \left( f_1+f_2 \right)\\
-  \frac{l}{J} \left( -f_1+f_2 \right)
+  \frac{d}{J} \left( -f_1+f_2 \right)
 \end{pmatrix}
 \end{equation}
 $$
 
 The following input variable change:
 $$ 
-U' = \begin{pmatrix}u_t\\u_d\end{pmatrix} = \begin{pmatrix}\frac{1}{m}(f_1+f_2) \\ \frac{-l}{J}(f_1-f_2)\end{pmatrix}
+U' = \begin{pmatrix}u_t\\u_d\end{pmatrix} = \begin{pmatrix}\frac{1}{m}(f_1+f_2) \\ \frac{d}{J}(-f_1+f_2)\end{pmatrix}
 $$
 leads to the simpler state space representation
 
@@ -129,16 +140,40 @@ $$
 \end{equation}
 $$
 
+[code](https://github.com/poine/these_ricardo/blob/main/src/single.py)
 
+
+{%comment%}
 ### 2: Planning <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_planning">show</button>
 <div id="single_pvtol_planning" class="collapse exemple" markdown="1">
 
 </div>
-### 3: Control <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control">show</button>
+{%endcomment%}
+
+
+
+### 2: Control 
+
+#### 2.1: Full State Feedback Regulation
+
+<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control">show</button>
 <div id="single_pvtol_control" class="collapse exemple" markdown="1">
-<figure>
-	<img src="plots/pvtol_reg_1.apng" alt="PVTOL schematics" width="512">
-	<figcaption>Fig1. - PVTOL schematics.</figcaption>
-</figure>
+
 </div>
 
+<figure>
+	<img src="plots/single_step_x.apng" alt="step x" width="512">
+	<figcaption>Fig1. - step x.</figcaption>
+</figure>
+[code](https://github.com/poine/these_ricardo/blob/main/src/single_test_2.py)
+
+#### 2.2: Trajectory tracking
+<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control2">show</button>
+<div id="single_pvtol_control2" class="collapse exemple" markdown="1">
+</div>
+
+<figure>
+	<img src="plots/single_circle_tracking.apng" alt="circle tracking" width="512">
+	<figcaption>Fig1. - circle tracking.</figcaption>
+</figure>
+[code](https://github.com/poine/these_ricardo/blob/main/src/single_test_3.py)
