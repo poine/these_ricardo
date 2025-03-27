@@ -3,7 +3,9 @@ title: Planar instance
 layout: default
 ---
 
-
+$$
+\newcommand{\ddt}[2]{#1^{(#2)}}
+$$
 <figure>
 	<img src="drawings/pvtol_single.png" alt="PVTOL schematics" width="360">
 	<figcaption>Fig1. - PVTOL schematics.</figcaption>
@@ -159,21 +161,97 @@ $$
 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control">show</button>
 <div id="single_pvtol_control" class="collapse exemple" markdown="1">
 
-</div>
+Here we stabilize the vehicle around an equilibrium $$X_e$$, $$U_e$$ 
+
+$$X_e = \begin{pmatrix}x_e&z_e&0&0&0&0\end{pmatrix}^T$$ 
+$$U_e = \begin{pmatrix}mg/2&mg/2\end{pmatrix}^T$$ 
+
+Noting $$\delta X = X-X_e$$ and $$\delta U = U-U_e$$, we obtain the linearized model as
+
+$$
+\dot{\delta X} = \begin{pmatrix}0&0&0&1&0&0\\0&0&0&0&1&0\\0&0&0&0&0&1\\
+                  0&0&-g&0&0&0\\0&0&0&0&0&0\\0&0&0&0&0&0\end{pmatrix}\delta X +
+				  \begin{pmatrix}0&0\\0&0\\0&0\\0&0\\1/m&1/m\\-d/J&d/J\end{pmatrix} \delta U
+$$
+
+The linearized system is fully controllable. the non-linear system can hence be stabilized using a state feeback $$U = U_e - K \delta X$$
+In the [example](https://github.com/poine/these_ricardo/blob/main/src/single_test_2.py) a gain is computed using LQR, leading to the following simulations;
 
 <figure>
-	<img src="plots/single_step_x.apng" alt="step x" width="512">
+	<img src="plots/single_step_x.apng" alt="step x" width="512"/>
+	<img src="plots/single_step_x_chrono.png" alt="step x" width="512"/>
 	<figcaption>Fig1. - step x.</figcaption>
 </figure>
+
+<figure>
+	<img src="plots/single_circle_regulation.apng" alt="circle" width="512"/>
+	<img src="plots/single_circle_regulation_chrono.png" alt="circle" width="512"/>
+	<figcaption>Fig1. - circle.</figcaption>
+</figure>
+
+</div>
+
+
+<figure>
+	<img src="plots/single_step_z.apng" alt="step z" width="512"/>
+	<img src="plots/single_step_z_chrono.png" alt="step z" width="512"/>
+	<figcaption>Fig1. - step z.</figcaption>
+</figure>
+
+
 [code](https://github.com/poine/these_ricardo/blob/main/src/single_test_2.py)
 
 #### 2.2: Trajectory tracking
+
 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control2">show</button>
 <div id="single_pvtol_control2" class="collapse exemple" markdown="1">
+
+In the previous part, we notice the regulation showing its limit on the circle example.
+In order to improve trajectory following, we will improve the open-loop part of our controller.
+
+The differential flatness property of the vehicle can be leveraged in order to follow a dynamic trajectory $$Yr(t)=\begin{pmatrix}x_r(t), y_r(t)\end{pmatrix}$$
+
+Given a sufficiently smooth trajectory, it is possible to obtain the state vector $$X_r(t)$$ and the input $$U_r(t)$$ from a number of time derivatives of the output $$Y_r$$
+
+
+
+$$
+X_r = \begin{pmatrix} \ddt{x}{0} \\ \ddt{z}{0} \\ -\arctan\frac{\ddt{x}{2}}{\ddt{z}{2}+g} \\
+\ddt{x}{1} \\ \ddt{z}{1} \\
+-\frac{\left(\ddt{z}{2}+g\right)\ddt{x}{3} - \ddt{x}{2}\ddt{z}{3}} 
+    {\left(\ddt{z}{2}+g\right)^2 + \left(\ddt{x}{2}\right)^2} \end{pmatrix}
+$$
+
+$$
+U_r =
+\begin{pmatrix}
+  \sqrt{\left(\ddt{x}{2}\right)^2 + \left(\ddt{z}{2}+g\right)^2}\\
+  \frac{\left[\ddt{x}{4}(\ddt{z}{2}+g)-\ddt{z}{4}\ddt{x}{2}\right]
+    \left[(\ddt{z}{2}+g)^2 + (\ddt{x}{2})^2\right] -
+    \left[2(\ddt{z}{2}+g)\ddt{z}{3} + 2\ddt{x}{2}\ddt{x}{3}\right]
+    \left[\ddt{x}{3}(\ddt{z}{2}+g) - \ddt{z}{3}\ddt{x}{2}\right]}
+  {\left(\left(\ddt{z}{2}+g\right)^2 + \left(\ddt{x}{2}\right)^2\right)^2}\\
+\end{pmatrix}
+$$
+
+The controller 
+$$
+U = U_r + K(X-X_r)
+$$
+can be show to achieve perfect trajectory traking while providing asymptotically stable error rejection.
+
 </div>
 
 <figure>
-	<img src="plots/single_circle_tracking.apng" alt="circle tracking" width="512">
+	<img src="plots/single_circle_tracking.apng" alt="circle tracking" width="512"/>
+	<img src="plots/single_circle_tracking_chrono.png" alt="circle tracking" width="512"/>
 	<figcaption>Fig1. - circle tracking.</figcaption>
 </figure>
 [code](https://github.com/poine/these_ricardo/blob/main/src/single_test_3.py)
+
+#### 2.3: Reference Model
+
+<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control3">show</button>
+<div id="single_pvtol_control3" class="collapse exemple" markdown="1">
+
+</div>

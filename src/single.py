@@ -13,7 +13,7 @@ import scipy.integrate
 class Param:
     def __init__(self, sat=None):
         self.m     = 1.      # mass in kg
-        self.l     = 0.2     # arm length in m
+        self.d     = 0.2     # arm length in m
         self.J     = 0.01    # inertia
         self.sat   = sat     # max thrust of motor in N
         self.g     = 9.81
@@ -21,6 +21,7 @@ class Param:
 ''' State vector components '''
 sv_x, sv_z, sv_th, sv_xd, sv_zd, sv_thd, sv_size = np.arange(0,7)
 sv_slice_pos, sv_slice_vel = slice(2), slice(3,5)
+sv_lice_kin, sv_slice_dyn = slice(3), slice(3,6)
 ''' Input vector components '''
 iv_f1, iv_f2, iv_size = np.arange(0,3)
 
@@ -38,7 +39,7 @@ def dyn(X, t, U, P):
     sth, cth = np.sin(X[sv_th]), np.cos(X[sv_th])
     Xd[sv_xd]  = -sth/P.m*ut
     Xd[sv_zd]  =  cth/P.m*ut-P.g
-    Xd[sv_thd] = P.l/P.J*ud
+    Xd[sv_thd] = P.d/P.J*ud
 
     return Xd    
 
@@ -60,7 +61,7 @@ def jacobian(Xe, Ue, P):
                   [0, 0, -one_over_m*ct*(Ue[iv_f1]+Ue[iv_f2]), 0, 0, 0],
                   [0, 0, -one_over_m*st*(Ue[iv_f1]+Ue[iv_f2]),  0, 0, 0],
                   [0, 0, 0, 0, 0, 0]])
-    l_over_J = P.l/P.J
+    l_over_J = P.d/P.J
     B = np.array([[0, 0],
                   [0, 0],
                   [0, 0],
@@ -84,7 +85,7 @@ def trim(P, args={}):
 
 
 
-def plot_trajectory(time, X, U=None, figure=None, axes=None, window_title="Trajectory",
+def plot_trajectory(time, X, U=None, Yr=None, Xr=None, figure=None, axes=None, window_title="Trajectory",
                     legend=None, filename=None):
     figure = plt.figure(tight_layout=True, figsize=[8., 6.]) if figure is None else figure
     nr, nc = (3,2) if U is None else (4,2)
@@ -99,6 +100,16 @@ def plot_trajectory(time, X, U=None, figure=None, axes=None, window_title="Traje
         plots += [("$U$", "N", U)]
     for ax, (_t, _u, _d) in zip(axes.flatten(), plots):
         ax.plot(time, _d);  ax.set_title(_t); ax.grid(True); ax.yaxis.set_label_text(_u)
+    if Yr is not None:
+       axes[0,0].plot(time, Yr[:,0], label='setpoint') 
+       axes[0,1].plot(time, Yr[:,1], label='setpoint') 
+    if Xr is not None:
+       axes[0,0].plot(time, Xr[:,0], label='reference') 
+       axes[0,1].plot(time, Xr[:,1], label='reference') 
+       axes[1,0].plot(time, Xr[:,3], label='reference') 
+       axes[1,1].plot(time, Xr[:,4], label='reference') 
+       axes[2,0].plot(time, np.rad2deg(Xr[:,2]), label='reference') 
+       axes[2,1].plot(time, np.rad2deg(Xr[:,5]), label='reference') 
     axes[-1,0].xaxis.set_label_text('time in s'); axes[-1,1].xaxis.set_label_text('time in s')
     figure.canvas.manager.set_window_title(window_title)
     if filename is not None: plt.savefig(filename)
@@ -111,9 +122,13 @@ import matplotlib.animation as animation
 def extrema(arr, d=0): return np.min(arr)-d, np.max(arr)+d
 def compute_extends(X, P):
     m_pos = X[:,sv_slice_pos]
-    (x_min, x_max), (y_min, y_max) = [extrema(m_pos[:,i], 1.5*P.l) for i in range(2)]
+    (x_min, x_max), (y_min, y_max) = [extrema(m_pos[:,i], 1.5*P.d) for i in range(2)]
     return (x_min, x_max), (y_min, y_max)
-def animate(time, X, U, Yc, P, title=None, _drawings=False, _imgs=True, figure=None, ax=None):
+def subsample(l): # FIXME 100Hz -> 25fps 
+    return [_l[::4] for _l in l] 
+
+def animate(time, X, U, Xc, P, title=None, _drawings=False, _imgs=True, figure=None, ax=None):
+    time, X, U, Xc =  subsample((time, X, U, Xc))
     (_xmin, _xmax), (_ymin, _ymax) = compute_extends(X, P)
     #_xmin, _xmax, _ymin, _ymax = -5, 5, -2, 2
     fig = figure or plt.figure(figsize=(10., 4.))
@@ -135,10 +150,10 @@ def animate(time, X, U, Yc, P, title=None, _drawings=False, _imgs=True, figure=N
         #print(f'in animate {i}')
         p0 = X[i, :sv_th]
         d = np.array([np.cos(X[i, sv_th]), np.sin(X[i, sv_th])])
-        p1, p2 = p0+P.l*d, p0-P.l*d
+        p1, p2 = p0+P.d*d, p0-P.d*d
         _line_body.set_data([p1[0], p0[0], p2[0]], [p1[1], p0[1], p2[1]])
         time_text.set_text(time_template.format(i * dt))
-        p1 = p2 = Yc[i,0]
+        p1 = p2 = Xc[i]
         _line_setpoint.set_data([p1[0], p2[0]], [p1[1], p2[1]])
         return time_text, _line_body, _line_setpoint
      

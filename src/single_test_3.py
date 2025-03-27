@@ -14,17 +14,16 @@ import control
 
 class CircleTraj:
     def __init__(self):
-        self.c, self.r, self.v = np.array([0,0]), 1., 1.
+        self.c, self.r, self.om = np.array([0,0]), 1., 1.5
 
     def get(self, t):
-        a = t*self.v; ca, sa = np.cos(a), np.sin(a)
+        a = t*self.om; ca, sa = np.cos(a), np.sin(a)
         Y0 = self.c + self.r  * np.array([ ca,  sa])
-        Y1 = self.r*self.v    * np.array([-sa,  ca])
-        Y2 = self.r*self.v**2 * np.array([-ca, -sa])
-        Y3 = self.r*self.v**3 * np.array([ sa, -ca])
-        Y4 = self.r*self.v**4 * np.array([ ca,  sa])
+        Y1 = self.r*self.om    * np.array([-sa,  ca])
+        Y2 = self.r*self.om**2 * np.array([-ca, -sa])
+        Y3 = self.r*self.om**3 * np.array([ sa, -ca])
+        Y4 = self.r*self.om**4 * np.array([ ca,  sa])
         return np.vstack((Y0, Y1, Y2, Y3, Y4))
-
 
 
 def feedback_control(X, Xsp, Ue, K):
@@ -46,13 +45,13 @@ def output_to_state(Yc, P):
     b = x2**2 + z2pg**2
     c = 2*(z2pg*z3 + x2*x3)
     d = x3*z2pg-z3*x2
-    ud = -P.J/P.l*(a/b - c*d/b**2)
+    ud = -P.J/P.d*(a/b - c*d/b**2)
     Uc = np.array([(ut+ud)/2., (ut-ud)/2.])
     return Xc, Uc
 
 def sim(P, dt=0.01, tf=10.):
     time = np.arange(0., tf, dt)
-    X, Xsp, U = [np.zeros((len(time), _s)) for _s in [dyn.sv_size, dyn.sv_size, dyn.iv_size]]
+    X, Xr, U = [np.zeros((len(time), _s)) for _s in [dyn.sv_size, dyn.sv_size, dyn.iv_size]]
     traj = CircleTraj()
     Yc = np.array([traj.get(_t) for _t in time])
     
@@ -63,19 +62,21 @@ def sim(P, dt=0.01, tf=10.):
     K = np.array(K)
     X[0] = Xe
     for i in range(0, len(time)):
-        Xsp[i], Uc = output_to_state(Yc[i], P)
-        U[i] =  feedback_control(X[i], Xsp[i], Uc, K)
+        Xr[i], Uc = output_to_state(Yc[i], P)
+        U[i] =  feedback_control(X[i], Xr[i], Uc, K)
         if i < len(time)-1: X[i+1] = dyn.disc_dyn(X[i], U[i], P, dt)
-
     
-    return time, X, U, Yc
+    return time, X, U, Yc, Xr
 
 def main(save=False):
     P = dyn.Param()  
-    time, X, U, Yc = sim(P)
-    anim = dyn.animate(time, X, U, Yc, P)
+    time, X, U, Yc, Xr = sim(P)
+    dyn.plot_trajectory(time, X, U, Yc[:,0], Xr, window_title="LQR")
     if save:
-        mu.save_anim(mu.PLOT_DIR+'/single_circle_tracking.apng', anim, 6/25.)
+        plt.savefig(mu.PLOT_DIR+f'/single_circle_tracking_chrono.png')
+    anim = dyn.animate(time, X, U, Yc[:,0], P)
+    if save:
+        mu.save_anim(mu.PLOT_DIR+'/single_circle_tracking.apng', anim)
     plt.show()
 
     

@@ -138,10 +138,9 @@ def decorate(ax, title=None, xlab=None, ylab=None, legend=None, xlim=None, ylim=
 
 import time
 import matplotlib.animation as animation
-def save_anim(filename, an, dt=None):
+def save_anim(filename, an, fps=25):
     print('encoding animation video, please wait, it will take a while')
     _start = time.time()
-    #fps = 1./dt/4; print(f'dt {dt} fps {fps}')# FIXME
-    an.save(filename, writer=animation.PillowWriter(fps=90.)) # 90 85 80 75 is ok 91. 95. fails
+    an.save(filename, writer=animation.PillowWriter(fps=fps)) # 90 85 80 75 is ok 91. 95. fails
     _end = time.time()
     print(f'video encoded, saved to {filename}, Bye (took {_end-_start:.1f} s)')
