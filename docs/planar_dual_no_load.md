@@ -41,6 +41,15 @@ $$
 \end{cases}
 $$
 
+$$
+\begin{cases}
+\ddot{x}_2 = \ddot{x} - l( \ddot{\phi} \sin{\phi} + \dot{\phi} \cos{\phi} ) \\
+\ddot{z}_2 = \ddot{z} + l( \ddot{\phi} \cos{\phi} - \dot{\phi} \sin{\phi} )
+\end{cases}
+$$
+
+
+
   * Kinetic energy
   
 $$ 

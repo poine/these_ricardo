@@ -13,8 +13,8 @@ import single_test_3 as test_3
 
 def stepxz(t):
     Yc = np.zeros(2)
-    #Yc = mu.step(t, 5.), -mu.step(t, 2.5)
-    Yc = mu.step(t, 5.), 0
+    Yc = mu.step(t, 5.), -mu.step(t, 1., p=5.)
+    #Yc = mu.step(t, 5.), 0
     return Yc
 
 def feedback_control(X, Xsp, Ur, K):
@@ -25,7 +25,7 @@ def feedback_control(X, Xsp, Ur, K):
 
 class TwoDRef:
     def __init__(self):
-        poles = [complex(-3, 3), complex(-3, -3), complex(-4, 4), complex(-4, -4), -5]
+        poles = [complex(-3, 2), complex(-3, -2), complex(-4, 3), complex(-4, -3), -6]
         coefs = np.poly(poles)
         _sats = [5., 10., 100., 500, 15000.]  # vel, accel, jerk, snap, crackle 
         self.refx = mu.LinRef(-np.flip(coefs)[:-1], sats=_sats)
@@ -37,10 +37,10 @@ class TwoDRef:
         Yr[:,1] = self.refz.run(ti-tim1, sp[1])
         return Yr
         
-def sim(P, dt=0.01, tf=10.):
+def sim(P, dt=0.01, tf=12., save=None):
     time = np.arange(0., tf, dt)
     X, Xr, Ur, U = [np.zeros((len(time), _s)) for _s in [dyn.sv_size, dyn.sv_size, dyn.iv_size, dyn.iv_size]]
-    Yr = np.zeros((len(time), 6, 2))
+    Ysp, Yr = np.zeros((len(time), 2)), np.zeros((len(time), 6, 2))
     r = TwoDRef()
     Xe, Ue = dyn.trim(P)
     A, B = dyn.jacobian(Xe, Ue, P)
@@ -50,20 +50,25 @@ def sim(P, dt=0.01, tf=10.):
     X[0] = Xr[0]
     for i in range(0, len(time)):
         if i > 1:
-            Yr[i] = r.get(stepxz(time[i]), time[i-1], time[i])
+            Ysp[i] = stepxz(time[i])
+            Yr[i] = r.get(Ysp[i], time[i-1], time[i])
         Xr[i], Ur[i] = test_3.output_to_state(Yr[i], P)
         #breakpoint()
         U[i] = np.flip(Ur[i]) + feedback_control(X[i], Xr[i], Ur[i], K)
         if i < len(time)-1:
             X[i+1] = dyn.disc_dyn(X[i], U[i], P, dt)
         
-    dyn.plot_trajectory(time, X, Ur, Yr[:,0], Xr, window_title="LQR")
-    anim = dyn.animate(time, X, U, Yr[:,0], P)
+    dyn.plot_trajectory(time, X, Ur, Yr[:,0], Ysp, Xr, window_title="LQR")
+    if save:
+        plt.savefig(mu.PLOT_DIR+f'/single_ref_model_{save}_chrono.png')
+    anim = dyn.animate(time, X, U, P, Ysp, Yr[:,0])
+    if save:
+        mu.save_anim(mu.PLOT_DIR+f'/single_ref_model_{save}.apng', anim)
     plt.show()
     
 def main(save=False):
     P = dyn.Param()  
-    sim(P)
+    sim(P, save='step_xz' if save else None)
     
 if __name__ == "__main__":
     main(save='-s' in sys.argv)

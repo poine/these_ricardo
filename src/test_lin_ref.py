@@ -25,6 +25,7 @@ def plot_ref(_time, Xr, _id="", _sp=None, _sats=None, fig=None, axs=None):
             _a.plot(_time, -_sats[_i-1]*np.ones(len(_time)), 'k--')
         mu.decorate(_a, _l, xlab=None if _i<order-1 else 'time in s', legend=True)
     if _sp is not None: axs[0].plot(_time, _sp, label='setpoint')
+    axs[0].legend(loc='best')
     return fig, axs
 
 def run_ref(_ref, _time, _sp):
@@ -47,7 +48,6 @@ def test_2nd_order():
 
     fig, axs = plot_ref(_time, Xr1, _id="linear")
     plot_ref(_time, Xr2, _id="saturated", _sp=_sp, _sats=_ref2.sats, fig=fig, axs=axs)
-    plt.show()
 
 def test_5th_order():
     _time = np.arange(0, 12, 0.01) 
@@ -63,7 +63,6 @@ def test_5th_order():
     Xr2 = run_ref(_ref2, _time, _sp)
     fig, axs = plot_ref(_time, Xr1, _id="linear")
     plot_ref(_time, Xr2, _id="saturated", _sp=_sp, _sats=_ref2.sats, fig=fig, axs=axs)
-    plt.show()
 
 def test_6th_order():
     _time = np.arange(0, 12, 0.01) 
@@ -71,7 +70,7 @@ def test_6th_order():
     poles = [complex(-3, 3), complex(-3, -3), complex(-4, 4), complex(-4, -4), complex(-5, 5), complex(-5, -5)]
     coefs = np.poly(poles)
     _ref1 = mu.LinRef(-np.flip(coefs)[:-1], sats=None) 
-    _sats = [7., 15., 100., 500, 15000., 100000]  # vel, accel, jerk, snap, crackle, pop 
+    _sats = [7., 15., 100., 500, 7000., 120000]  # vel, accel, jerk, snap, crackle, pop 
     _ref2 = mu.LinRef(-np.flip(coefs)[:-1], sats=_sats)
 
     _sp = 10.*scipy.signal.square(_time*np.pi/5)
@@ -79,12 +78,14 @@ def test_6th_order():
     Xr2 = run_ref(_ref2, _time, _sp)
     fig, axs = plot_ref(_time, Xr1, _id="linear")
     plot_ref(_time, Xr2, _id="saturated", _sp=_sp, _sats=_ref2.sats, fig=fig, axs=axs)
-    plt.show()
         
 def main(args):
     #test_2nd_order()
     #test_5th_order()
     test_6th_order()
-
+    if '-s' in sys.argv:
+        plt.savefig(mu.PLOT_DIR+f'/reference_model_test.png')
+    plt.show()
+    
 if __name__ == '__main__':
     main(sys.argv)

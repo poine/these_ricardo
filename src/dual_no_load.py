@@ -31,7 +31,7 @@ class Param:
 
 class PVT:
     s_x, s_z, s_th, s_ph, s_th2, s_xd, s_zd, s_thd, s_phd, s_th2d, s_size  = range(11) # state vector components
-    slice_pos, slice_kin, slice_dyn = slice(2), slice(5), slice(5, 11)
+    slice_pos, slice_vel, slice_kin, slice_dyn = slice(2), slice(5, 7), slice(5), slice(5, 11)
     i_fl1, i_fr1, i_fl2, i_fr2, i_size =  range(5)                                     # input vector components
 
     def __init__(self, P=None):
@@ -87,7 +87,12 @@ class PVT:
     def slave_state(X):  # phi, theta2, phid, theta2d
         return np.hstack((X[PVT.s_ph:PVT.s_th2+1], X[PVT.s_phd:PVT.s_th2d+1]))
 
-    
+    def slave_state2(self, X):
+        #
+        cph, sph, phd = np.cos(X[PVT.s_ph]), np.sin(X[PVT.s_ph]), X[PVT.s_phd]
+        x2, z2 = X[PVT.slice_pos] + self.P.l*np.array([cph, sph])
+        x2d, z2d = X[PVT.slice_vel] + self.P.l*phd*np.array([-sph, cph])                         
+        return np.array([x2, z2, X[PVT.s_th2], x2d, z2d, X[PVT.s_th2d]])
 
 def plot_trajectory(time, X, U, figure=None, axes=None):
     figure = plt.figure(tight_layout=True, figsize=[8., 6.]) if figure is None else figure
@@ -117,8 +122,10 @@ def compute_extends(X, P):
     s_pos = m_pos + P.P.l*np.array([np.cos(X[:,PVT.s_ph]), np.sin(X[:,PVT.s_ph])]).T
     (x_min, x_max), (y_min, y_max) = [extrema(np.hstack((m_pos[:,i], s_pos[:,i])), 1.2*P.P.d1) for i in range(2)]
     return (x_min, x_max), (y_min, y_max)
-    
+
+def subsample(l): return [_l[::4] if _l is not None else None for _l in l]  # FIXME hardcoded 100Hz -> 25fps     
 def animate(time, X, U, P, Xsp=None, figure=None, ax=None):
+    time, X, U, Xsp =  subsample((time, X, U, Xsp))
     (_xmin, _xmax), (_ymin, _ymax) = compute_extends(X, P)
     #_xmin, _xmax, _ymin, _ymax = -0.75, 1.75, -0.5, 0.5
     fig = figure or plt.figure(figsize=(10., 4.))

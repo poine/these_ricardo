@@ -16,6 +16,10 @@ import dual_no_load as PVT, misc_utils as mu
 LOG = logging.getLogger(__name__)
 
 def normMpiPi(_v): return np.arctan2(np.sin(_v), np.cos(_v))
+def normMpiPi(_v):
+    _v = np.fmod(_v, 2*np.pi)
+    if _v > np.pi: _v -= np.pi
+    return _v
 
 def cst(t):
     X = np.zeros(PVT.PVT.s_size)
@@ -49,6 +53,13 @@ def rampphi(t, omega=2*np.pi/10.):
     X[PVT.PVT.s_ph] = omega*t#np.sin(0.5*t)#
     return X
 
+def step_foo(t, dphi=np.deg2rad(45)):
+    X = np.zeros(PVT.PVT.s_size)
+    X[PVT.PVT.s_x] = mu.step(t, 0.5)
+    X[PVT.PVT.s_z] = -0.5
+    X[PVT.PVT.s_ph] = np.pi/2 + mu.step(t, dphi)
+    return X
+
 def feedback_control(X, Xsp, Ue, K):
     dX = X-Xsp
     dX[PVT.PVT.s_ph] = normMpiPi(dX[PVT.PVT.s_ph])
@@ -70,7 +81,7 @@ def sim_feedback(sp, dt=0.01, savefile=None):
         (K, X, E) = control.matlab.lqr(A, B, Q, R)
         if _v:
             with np.printoptions(precision=2, linewidth=200):
-                poles, vect_p = np.linalg.eig(A-np.dot(B, K))
+                poles, vect_p = np.linalg.eig(A-B@K)
                 LOG.info('gain:\n{}'.format(K))
                 LOG.info('poles:\n{}'.format(poles))
         return K
@@ -87,23 +98,24 @@ def sim_feedback(sp, dt=0.01, savefile=None):
         K = compute_gain(X[i], P.Ue) 
         U[i] =  feedback_control(X[i], Xsp[i], Ue, K)
         if i < len(time)-1: X[i+1] = P.disc_dyn(X[i], U[i], dt)
-    #PVT.plot_trajectory(time, X, U)
+    PVT.plot_trajectory(time, X, U)
     anim = PVT.animate(time, X, U, P, Xsp)
     if savefile is not None:
-        mu.save_anim(mu.PLOT_DIR+'/'+savefile, anim, 6/25.)
+        mu.save_anim(mu.PLOT_DIR+'/'+savefile, anim)
     plt.show()
 
 
 def test_0(save): sim_feedback(cst)
-def test_1(save): sim_feedback(stepx, savefile='dual_no_load__state_feedback_1.apng' if save is not None else None)
+def test_1(save): sim_feedback(stepx, savefile='dual_no_load__state_feedback_1.apng' if save else None)
 def test_2(save): sim_feedback(stepz)
 def test_3(save): sim_feedback(stepphi)
-def test_4(save): sim_feedback(stepxz, savefile='dual_no_load__state_feedback_2.apng' if save is not None else None)
-def test_5(save): sim_feedback(rampphi, savefile='dual_no_load__state_feedback_3.apng' if save is not None else None)
+def test_4(save): sim_feedback(stepxz, savefile='dual_no_load__state_feedback_2.apng' if save  else None)
+def test_5(save): sim_feedback(rampphi, savefile='dual_no_load__state_feedback_3.apng' if save else None)
+def test_6(save): sim_feedback(step_foo, savefile='dual_no_load__state_feedback_4.apng' if save else None)
 
 def main(exp, save):
     logging.basicConfig(level=logging.INFO)
-    exps = [test_0, test_1, test_2, test_3, test_4, test_5]
+    exps = [test_0, test_1, test_2, test_3, test_4, test_5, test_6]
     exps[exp](save)
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ import sys, numpy as np, scipy.integrate, matplotlib.pyplot as plt
 
 import dual_no_load as PVT, misc_utils as mu
 
-def stepUt(P, t):
+def stepU(P, t):
     U = np.array(P.Ue)
     ud1 = 0.005*np.sin(t+np.pi/2)
     ut1 = 0.05
@@ -31,14 +31,13 @@ def main(save=False, dt=0.01):
     X = np.zeros((len(time), P.s_size))
     U = Ue*np.ones((len(time), P.i_size))
     X[0] = X0
-    for i in range(0, len(time)-1):
-        U[i] =  stepUt(P, time[i])
-        X[i+1] = P.disc_dyn(X[i], U[i], dt)
-    U[-1] =  stepUt(P, time[-1])
+    for i in range(0, len(time)):
+        U[i] =  stepU(P, time[i])
+        if i<len(time)-1: X[i+1] = P.disc_dyn(X[i], U[i], dt)
     PVT.plot_trajectory(time, X, U)
     anim = PVT.animate(time, X, U, P)
     if save:
-        mu.save_anim(mu.PLOT_DIR+'/dual_no_load__open_loop.apng', anim, None)
+        mu.save_anim(mu.PLOT_DIR+'/dual_no_load__open_loop.apng', anim)
     plt.show()
 
 

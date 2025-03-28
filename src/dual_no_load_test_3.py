@@ -15,18 +15,47 @@ import dual_no_load as PVT, misc_utils as mu
 
 LOG = logging.getLogger(__name__)
 
-
-def ms_feedback(X, Xsp, Ue, K1, K2):
+W = np.array([[1, 1],[-1, 1]])
+invW = 0.5*np.array([[1, -1],[1, 1]]) # input variable change
+def ms_feedback(X, Xsp, Ue, P):
     U = np.array(Ue)
-    dX_master = PVT.PVT.master_state(X-Xsp)
-    dU1 = - K1@dX_master # master vehicle
-    dX_slave = PVT.PVT.slave_state(X-Xsp)
-    dU2 = K2@dX_slave
-    #breakpoint()
-    return Ue-dU1-dU2
 
-def feedback_control(X, Xsp, Ue, K):
-    return Ue - K@(X-Xsp)
+    # Master
+    omega_t, xi_t, omega_x, xi_x, omega_z, xi_z =6,0.9, 2,0.9, 2,0.9
+    ox2, oz2, ot2 = omega_x**2, omega_z**2, omega_t**2
+    txiomx, txiomz, txiomt = 2.*xi_x*omega_x, 2.*xi_z*omega_z, 2.*xi_t*omega_t  
+
+    Kol = np.array([[0, oz2*P.P.m1, 0, txiomz*P.P.m1],
+                    [-ox2/P.P.g, 0, -txiomx/P.P.g, 0]])
+    Hol = np.array([[0, oz2*P.P.m1],[-ox2/P.P.g, 0]])
+    Kil, Hil =  P.P.J1/P.P.d1*np.array([[ot2, txiomt]]), P.P.J1/P.P.d1*np.array([[ot2]])
+
+    X_master = PVT.PVT.master_state(X) # x, z, th, xd, zd, thd
+    # x, z, xd, zd
+    X_master_ol = np.array([X_master[0], X_master[1], X_master[3], X_master[4]])
+    Yc = Xsp[P.slice_pos]
+    dut, dth = -np.dot(Kol, X_master_ol) + np.dot(Hol, Yc)
+    # th, thd
+    X_master_il =  np.array([X_master[2], X_master[5]])
+    dud = -np.dot(Kil, X_master_il) + np.dot(Hil, dth)
+    U[:2] += np.dot(invW, [dut, dud[0,0]])
+    
+    # Slave
+    Kol = np.array([[0, oz2*P.P.m2, 0, txiomz*P.P.m2],
+                    [-ox2/P.P.g, 0, -txiomx/P.P.g, 0]])
+    Hol = np.array([[0, oz2*P.P.m2],[-ox2/P.P.g, 0]])
+    Kil, Hil =  P.P.J2/P.P.d2*np.array([[ot2, txiomt]]), P.P.J2/P.P.d2*np.array([[ot2]])
+    X_slave, X_slave_sp = P.slave_state2(X), P.slave_state2(Xsp)
+    # x, z, xd, zd
+    X_slave_ol = np.array([X_slave[0], X_slave[1], X_slave[3], X_slave[4]])
+    Yc = X_slave_sp[:2]
+    dut, dth = -np.dot(Kol, X_slave_ol) + np.dot(Hol, Yc)
+    # th, thd
+    X_slave_il =  np.array([X_slave[2], X_slave[5]])
+    dud = -np.dot(Kil, X_slave_il) + np.dot(Hil, dth)
+    U[2:] += np.dot(invW, [dut, dud[0,0]])
+
+    return U
 
 def stepx(t):
     X = np.zeros(PVT.PVT.s_size)
@@ -40,58 +69,32 @@ def cst(t):
 def sim_feedback(sp, dt=0.01):
     P = PVT.PVT()
     X0, Ue = np.zeros(P.s_size), P.Ue
-    if 0:
-        # feedbak regulation for master drone
-        import single
-        _p = single.Param()
-        _A, _B = single.jacobian(*single.trim(_p), _p)
-        _Q, _R = [3, 10, 0.5, 0.25, 0.25, 0.005], [1, 1]
-        (_K1, X, E) = control.lqr(_A, _B, np.diag(_Q), np.diag(_R))
-        print(f"master's poles {np.linalg.eig(_A-_B@_K1)[0]}")
-        K1 = np.vstack((_K1, np.zeros((2,6))))
-        _tmp = np.array(K1[0,:]) # single is defined backward FIXME
-        K1[0,:] = K1[1,:]
-        K1[1,:] = _tmp 
-        #breakpoint()
-        K2 = np.zeros((4,4))
-        #K2[2,:] = [2.,  -0.0, 0.25,  -0.0]
-        #K2[3,:] = [2.,   0.0, 0.25,   0.0]
-        K2[2,:] = [.01,   0.0, 0.08,   0.0]
-        K2[3,:] = [.01,   0.0, 0.08,   0.0]
-    else:
-        A, B = P.jac()
-        Q = np.diag([3., 7.,0.5, 10., 0.5,
-                     0.25, 0.25, 0.005, 0.25, 0.005])
-        R = np.diag([0.5, 0.5, 0.5, 0.5])
-        (K, X, E) = control.matlab.lqr(A, B, Q, R)
-        poles, vect_p = np.linalg.eig(A-np.dot(B, K))
-        with np.printoptions(precision=2, linewidth=200):
-            LOG.info('gain:\n{}'.format(K))
-            LOG.info('poles:\n{}'.format(poles))
-    
+
     X0 =np.array([0.1, 0.2, np.deg2rad(1),     np.deg2rad(1), np.deg2rad(2),
                   0.01, 0.02, np.deg2rad(0.1), np.deg2rad(3), np.deg2rad(4)])
     X0 =np.zeros(10)
-    X0[PVT.PVT.s_x] = -0.25
+    X0[PVT.PVT.s_x] = -0.1
+    X0[PVT.PVT.s_z] = -0.1
+    X0[PVT.PVT.s_zd] = 0.05
     X0[PVT.PVT.s_ph] = np.deg2rad(10)
-    time = np.arange(0., 4., dt)
+    X0[PVT.PVT.s_phd] = -np.deg2rad(1)
+    time = np.arange(0., 7., dt)
     X = np.zeros((len(time), P.s_size))
     Xsp = np.zeros((len(time), P.s_size))
     U = np.zeros((len(time), P.i_size))
     X[0] = X0
     for i in range(0, len(time)):
         Xsp[i] = sp(time[i])
-        #U[i] =  ms_feedback(X[i], Xsp[i], Ue, K1, K2)
-        U[i] =  feedback_control(X[i], Xsp[i], Ue, K)
+        U[i] =  ms_feedback(X[i], Xsp[i], Ue, P)
         if i < len(time)-1: X[i+1] = P.disc_dyn(X[i], U[i], dt)
     PVT.plot_trajectory(time, X, U)
-    anim = PVT.animate(time, X, U, P)
+    anim = PVT.animate(time, X, U, P, Xsp)
     plt.show()
     
 def main(exp):
     logging.basicConfig(level=logging.INFO)
-    sim_feedback(cst)
-    #sim_feedback(stepx)
+    #sim_feedback(cst)
+    sim_feedback(stepx)
     
 if __name__ == "__main__":
     exp = 0 if len(sys.argv)<2 else int(sys.argv[1])

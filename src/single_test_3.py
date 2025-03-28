@@ -9,12 +9,12 @@ import single as dyn, misc_utils as mu
 import control
 
 #
-# Trajectory following for single vehicle
+# (algebraic) Trajectory following for single vehicle
 #
 
 class CircleTraj:
     def __init__(self):
-        self.c, self.r, self.om = np.array([0,0]), 1., 1.5
+        self.c, self.r, self.om = np.array([0,0]), 1., 2.
 
     def get(self, t):
         a = t*self.om; ca, sa = np.cos(a), np.sin(a)
@@ -26,9 +26,16 @@ class CircleTraj:
         return np.vstack((Y0, Y1, Y2, Y3, Y4))
 
 
+class PolyTraj:
+    def __init__(self):
+        self.px = mu.PolynomialOne([0, 0, 0, 0, 0], [2, 0, 0, 0, 0], 10.)
+    def get(self, t):
+        Y = np.vstack((self.px.get(t), [0, 0, 0, 0, 0])).T
+        return Y
+    
 def feedback_control(X, Xsp, Ue, K):
     dX = X-Xsp
-    #dX[PVT.PVT.s_th] = normMpiPi(dX[PVT.PVT.s_th])
+    #dX[dyn.sv_th] = mu.normMpiPi(dX[dyn.sv_th])
     return Ue-K@dX
 
 def output_to_state(Yc, P):
@@ -53,11 +60,12 @@ def sim(P, dt=0.01, tf=10.):
     time = np.arange(0., tf, dt)
     X, Xr, U = [np.zeros((len(time), _s)) for _s in [dyn.sv_size, dyn.sv_size, dyn.iv_size]]
     traj = CircleTraj()
+    #traj = PolyTraj()
     Yc = np.array([traj.get(_t) for _t in time])
     
     Xe, Ue = dyn.trim(P)
     A, B = dyn.jacobian(Xe, Ue, P)
-    Q, R = [5, 10, 1, 1, 1, 1], [1, 1]
+    Q, R = [10, 10, 1, 1, 1, 1], [1, 1]
     (K, _X, _E) = control.lqr(A, B, np.diag(Q), np.diag(R))
     K = np.array(K)
     X[0] = Xe
@@ -74,7 +82,7 @@ def main(save=False):
     dyn.plot_trajectory(time, X, U, Yc[:,0], Xr, window_title="LQR")
     if save:
         plt.savefig(mu.PLOT_DIR+f'/single_circle_tracking_chrono.png')
-    anim = dyn.animate(time, X, U, Yc[:,0], P)
+    anim = dyn.animate(time, X, U, P, Yc[:,0])
     if save:
         mu.save_anim(mu.PLOT_DIR+'/single_circle_tracking.apng', anim)
     plt.show()

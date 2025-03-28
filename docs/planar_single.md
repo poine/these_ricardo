@@ -18,9 +18,9 @@ $$
 Applying Newton's second law to our vehicle in ground frame, we get
 
 $$\begin{align*}
-m\ddot{x} &= (f_1+f_2)\sin(\theta) \\
-m\ddot{z} &= -mg + (f_1+f_2)\cos(\theta) \\
-J\ddot{\theta} &= d(-f_1+f_2)
+m\ddot{x} &= -(f_l+f_r)\sin(\theta) \\
+m\ddot{z} &= -mg + (f_l+f_r)\cos(\theta) \\
+J\ddot{\theta} &= d(-f_l+f_r)
 \end{align*}$$
 
 
@@ -50,25 +50,19 @@ L &= \frac{1}{2} m(\dot{x}^2+\dot{z}^2) + \frac{1}{2} J \dot{\theta}^2 -  mgz
 
 ### Partial derivatives
 
-<table>
-<tr><td>
 $$
 \begin{cases}
 \frac{\partial{L}}{\partial{x}} =  0 \\
 \frac{\partial{L}}{\partial{z}} =  - m g\\
 \frac{\partial{L}}{\partial{\theta}} = 0 \\ 
 \end{cases}
-$$
-</td><td>
-$$
+\quad
 \begin{cases}
 \frac{\partial{L}}{\partial{\dot{x}}} = m\dot{x} \\
 \frac{\partial{L}}{\partial{\dot{z}}} = m\dot{z} \\
 \frac{\partial{L}}{\partial{\dot{\theta}}} = J \dot{\theta}
 \end{cases}
 $$
-</td></tr>
-</table>
 
 ### Lagrange equations
 
@@ -79,7 +73,7 @@ $$
 $$
 
 $$
-m\ddot{x} = -(f_1+f_2) \sin{\theta}
+m\ddot{x} = -(f_l+f_r) \sin{\theta}
 $$
 
  *
@@ -89,7 +83,7 @@ $$
 $$
 
 $$
-m\ddot{z} + mg = (f_1+f_2) \cos{\theta}
+m\ddot{z} + mg = (f_l+f_r) \cos{\theta}
 $$
 
  *
@@ -99,7 +93,7 @@ $$
 $$
 
 $$
-J\ddot{\theta} = d \left( -f_1+f_2 \right)
+J\ddot{\theta} = d \left(-f_l+f_r \right)
 $$
 
  </div>
@@ -107,7 +101,7 @@ $$
  
 ### State Space Representation
 
-Using $$X = \begin{pmatrix}x&z&\theta&\dot{x}&\dot{z}&\dot{\theta}\end{pmatrix}^T$$ as state and $$U = \begin{pmatrix}f_1 & f_2 \end{pmatrix}^T$$ as input, a state space represeantation can be obtained as:
+Using $$X = \begin{pmatrix}x&z&\theta&\dot{x}&\dot{z}&\dot{\theta}\end{pmatrix}^T$$ as state and $$U = \begin{pmatrix}f_l & f_r \end{pmatrix}^T$$ as input, a state space representation can be obtained as:
 
 
 $$
@@ -116,18 +110,18 @@ $$
   \dot{x} \\
   \dot{z} \\
   \dot{\theta} \\
-  -\frac{1}{m}  \sin{\theta} \left( f_1+f_2 \right) \\
-  -g + \frac{1}{m}  \cos{\theta} \left( f_1+f_2 \right)\\
-  \frac{d}{J} \left( -f_1+f_2 \right)
+  -\frac{1}{m}  \sin{\theta} \left( f_l+f_r \right) \\
+  -g + \frac{1}{m}  \cos{\theta} \left( f_l+f_r \right)\\
+  \frac{d}{J} \left( -f_l+f_r \right)
 \end{pmatrix}
 \end{equation}
 $$
 
 The following input variable change:
 $$ 
-U' = \begin{pmatrix}u_t\\u_d\end{pmatrix} = \begin{pmatrix}\frac{1}{m}(f_1+f_2) \\ \frac{d}{J}(-f_1+f_2)\end{pmatrix}
+U' = \begin{pmatrix}u_t\\u_d\end{pmatrix} = \begin{pmatrix}\frac{1}{m}(f_l+f_r) \\ \frac{d}{J}(-f_l+f_r)\end{pmatrix}
 $$
-leads to the simpler state space representation
+leads to the simplified state space representation
 
 $$
 \begin{equation}
@@ -147,7 +141,7 @@ $$
 
 {%comment%}
 ### 2: Planning <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_planning">show</button>
-<div id="single_pvtol_planning" class="collapse exemple" markdown="1">
+<div id="single_pvtol_planning" class="collapse  derivation" markdown="1">
 
 </div>
 {%endcomment%}
@@ -158,8 +152,15 @@ $$
 
 #### 2.1: Full State Feedback Regulation
 
-<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control">show</button>
-<div id="single_pvtol_control" class="collapse exemple" markdown="1">
+<figure>
+	<img src="plots/single_step_z.apng" alt="step z" width="512"/>
+	<img src="plots/single_step_z_chrono.png" alt="step z" width="512"/>
+	<figcaption>Fig1. - step z.</figcaption>
+</figure>
+
+<br>
+<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control">show details</button>
+<div id="single_pvtol_control" class="collapse derivation" markdown="1">
 
 Here we stabilize the vehicle around an equilibrium $$X_e$$, $$U_e$$ 
 
@@ -177,6 +178,8 @@ $$
 The linearized system is fully controllable. the non-linear system can hence be stabilized using a state feeback $$U = U_e - K \delta X$$
 In the [example](https://github.com/poine/these_ricardo/blob/main/src/single_test_2.py) a gain is computed using LQR, leading to the following simulations;
 
+TODO: linear invert control
+
 <figure>
 	<img src="plots/single_step_x.apng" alt="step x" width="512"/>
 	<img src="plots/single_step_x_chrono.png" alt="step x" width="512"/>
@@ -192,19 +195,13 @@ In the [example](https://github.com/poine/these_ricardo/blob/main/src/single_tes
 </div>
 
 
-<figure>
-	<img src="plots/single_step_z.apng" alt="step z" width="512"/>
-	<img src="plots/single_step_z_chrono.png" alt="step z" width="512"/>
-	<figcaption>Fig1. - step z.</figcaption>
-</figure>
-
 
 [code](https://github.com/poine/these_ricardo/blob/main/src/single_test_2.py)
 
 #### 2.2: Trajectory tracking
 
 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control2">show</button>
-<div id="single_pvtol_control2" class="collapse exemple" markdown="1">
+<div id="single_pvtol_control2" class="collapse derivation" markdown="1">
 
 In the previous part, we notice the regulation showing its limit on the circle example.
 In order to improve trajectory following, we will improve the open-loop part of our controller.
@@ -238,7 +235,7 @@ The controller
 $$
 U = U_r + K(X-X_r)
 $$
-can be show to achieve perfect trajectory traking while providing asymptotically stable error rejection.
+can be shown to achieve perfect trajectory traking while providing asymptotically stable error rejection.
 
 </div>
 
@@ -252,6 +249,23 @@ can be show to achieve perfect trajectory traking while providing asymptotically
 #### 2.3: Reference Model
 
 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#single_pvtol_control3">show</button>
-<div id="single_pvtol_control3" class="collapse exemple" markdown="1">
+<div id="single_pvtol_control3" class="collapse derivation" markdown="1">
+
+The smooth trajectory can be generated from a reference model like is done in [Admittance Control for Physical Human-Quadrocopter Interaction](https://www.flyingmachinearena.ethz.ch/wp-content/publications/2013/augECC13.pdf). 
+ 
+<a href="https://pdfs.semanticscholar.org/8b5c/2718be69a651dc3233a934ac05f5edda7ffd.pdf">Adaptive Control with a Nested Saturation Reference Model</a> describes a saturated pseudo-linear model which is implemented [here](https://github.com/poine/these_ricardo/blob/main/src/misc_utils.py). Saturations can can be disabled and the model reverted to a classic linear model.
+ 
+<figure>
+	<img src="plots/reference_model_test.png" alt="reference model" width="512"/>
+	<figcaption>Fig1. - 6th order reference model.</figcaption>
+</figure>
+[code](https://github.com/poine/these_ricardo/blob/main/src/test_lin_ref.py)
+
+<figure>
+	<img src="plots/single_ref_model_step_xz.apng" alt="ref model step xz" width="512"/>
+	<img src="plots/single_ref_model_step_xz_chrono.png" alt="ref model step xz" width="512"/>
+	<figcaption>Fig1. - ref model step xz.</figcaption>
+</figure>
+[code](https://github.com/poine/these_ricardo/blob/main/src/single_test_4.py)
 
 </div>

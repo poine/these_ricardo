@@ -52,13 +52,13 @@ def main(exp, save=False):
     if exp==0: sp, sf = stepx, 'single_step_x'
     elif exp==1: sp, sf = stepz, 'single_step_z'
     elif exp==2: sp, sf =lambda t: circle(t, om=0.5), 'single_circle_regulation'
-    else: sp=circle
+    else: sp, sf = circle, 'single_circle_regulation'
     X0 = [1, 0, 0, 0, 0, 0]
     time, X, Xsp, U = sim_with_feedback(P, Ue, K, X0, sp, tf=10., dt=0.01)
     dyn.plot_trajectory(time, X, U, Xsp, window_title="LQR")
     if save:
         plt.savefig(mu.PLOT_DIR+f'/{sf}_chrono.png')
-    anim = dyn.animate(time, X, U, Xsp[:,:2], P)
+    anim = dyn.animate(time, X, U, P, Xsp[:,:2])
     if save:
         mu.save_anim(mu.PLOT_DIR+f'/{sf}.apng', anim)
     plt.show()

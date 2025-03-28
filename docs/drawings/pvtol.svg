@@ -9,7 +9,7 @@
    id="svg5"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    sodipodi:docname="pvtol.svg"
-   inkscape:export-filename="pvtol_dual_3.png"
+   inkscape:export-filename="pvtol_single.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -29,10 +29,10 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1.2116473"
-     inkscape:cx="307.84536"
-     inkscape:cy="885.9839"
-     inkscape:window-width="1670"
-     inkscape:window-height="1347"
+     inkscape:cx="125.86171"
+     inkscape:cy="902.49035"
+     inkscape:window-width="2111"
+     inkscape:window-height="1119"
      inkscape:window-x="26"
      inkscape:window-y="23"
      inkscape:window-maximized="0"
@@ -1493,7 +1493,7 @@
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="Layer 2"
-     style="display:inline">
+     style="display:none">
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:1.965;stroke-dasharray:none;stroke-opacity:1"
        d="m 161.18457,247.8776 59.20799,-15.82653"
@@ -1792,7 +1792,7 @@
          transform="matrix(1.1736111,0,0,1.1736111,-6.9002701,-288.18139)" />
     </g>
     <g
-       transform="matrix(0.852071 0 0 0.852071 197.552 276.416)"
+       transform="matrix(0.852071,0,0,0.852071,197.552,276.416)"
        ns1:version="1.8.2"
        ns1:texconverter="pdflatex"
        ns1:pdfconverter="inkscape"
@@ -1841,10 +1841,10 @@
          fill="#000000"
          fill-opacity="1"
          id="id-936b2e0a-e154-4b48-afa5-b94400081adc"
-         transform="translate(-296.758, -142.314)"
+         transform="translate(-296.758,-142.314)"
          style="stroke-width:0">
         <g
-           transform="translate(296.461, 146.72)"
+           transform="translate(296.461,146.72)"
            style="stroke-width:0"
            id="g17928">
           <path
@@ -1857,10 +1857,10 @@
          fill="#000000"
          fill-opacity="1"
          id="id-8ab5e7e2-a3fa-4564-b7bb-040c388e215f"
-         transform="translate(-296.758, -142.314)"
+         transform="translate(-296.758,-142.314)"
          style="stroke-width:0">
         <g
-           transform="translate(305.208, 148.214)"
+           transform="translate(305.208,148.214)"
            style="stroke-width:0"
            id="g17932">
           <path
@@ -1873,10 +1873,10 @@
          fill="#000000"
          fill-opacity="1"
          id="id-28ffa70c-1c0e-4cce-a090-0b3930f3c550"
-         transform="translate(-296.758, -142.314)"
+         transform="translate(-296.758,-142.314)"
          style="stroke-width:0">
         <g
-           transform="translate(309.678, 146.72)"
+           transform="translate(309.678,146.72)"
            style="stroke-width:0"
            id="g17936">
           <path
