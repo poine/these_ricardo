@@ -66,5 +66,5 @@ def main(exp, save=False):
 if __name__ == "__main__":
     exp = 0 if len(sys.argv)<2 else int(sys.argv[1])
     save  = '-s' in sys.argv
-    main(exp, save='-s' in sys.argv)
+    main(exp, save)
 

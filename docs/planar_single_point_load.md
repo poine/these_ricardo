@@ -210,9 +210,10 @@ The system has full rank ( $$det(A) = 1$$ ).
 
 <figure>
 	<img src="plots/single_point_load__open_loop.apng" alt="open loop" width="512">
+	<img src="plots/single_point_load__open_loop_chrono.png" alt="open loop" width="512">
 	<figcaption>Fig1. - open loop</figcaption>
 </figure>
-
+<br>
 [code](https://github.com/poine/these_ricardo/blob/main/src/single_point_load.py)
 
 [code](https://github.com/poine/these_ricardo/blob/main/src/single_point_load_test_1.py)
@@ -225,5 +226,5 @@ The system has full rank ( $$det(A) = 1$$ ).
 	<img src="plots/single_point_load__state_feedback_1_chrono.png" alt="step z" width="512"/>
 	<figcaption>Fig1. - step x.</figcaption>
 </figure>
-
+<br>
 [code](https://github.com/poine/these_ricardo/blob/main/src/single_point_load_test_2.py)
