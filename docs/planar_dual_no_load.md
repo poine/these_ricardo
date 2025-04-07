@@ -18,6 +18,9 @@ layout: default
 <br>
 <p></p>
 
+<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#newton_derivation">Newton model derivation</button>
+<div id="newton_derivation" class="collapse derivation" markdown="1">
+</div>
 
 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#lagrange_derivation">Lagrange model derivation</button>
 <div id="lagrange_derivation" class="collapse derivation" markdown="1">
@@ -149,6 +152,18 @@ $$
 
 </div>
 
+### State Space Representation
+Using $$X = \begin{pmatrix}x&z&\theta&\phi&\theta_2&\dot{x}&\dot{z}&\dot{\theta}&\dot{\phi}&\dot{\theta_2}\end{pmatrix}^T$$ as state and $$U = \begin{pmatrix}f_l & f_r &f_{l2} & f_{r2} \end{pmatrix}^T$$ as input, a state space representation can be obtained as:
+
+$$
+\ddot{\phi} = \frac{m_1}{(m_1+m_2)l} (f_{l2}+f_{r2}) \cos(\phi-\theta_2) - \frac{m_2}{(m_1+m_2)l} (f_{l1}+f_{r1}) \cos(\phi-\theta_1) \\
+\ddot{x} =  -u_{t1}*\sin(\theta_1) - u_{t2} \sin(\theta_2) + \frac{l m_1}{m_1+m_2}\left(\ddot{\phi} \sin(\phi)+ \dot{\phi}^2\cos(\phi)\right) \\
+\ddot{z} = u_{t1}\cos(\theta_1) + u_{t2}\cos(\theta_2) - g - \frac{l m_2}{m_1+m_2}\left(\ddot{\phi} \cos(\phi)-\dot{\phi}^2 \sin(\phi)\right) \\
+\ddot{\theta} = (-f_{l1}+f_{r1})\frac{d_1}{J_1}\\
+\ddot{\theta}_2 = (-f_{l2}+f_{r2})\frac{d_2}{J_2}\\
+
+$$
+
 [code](https://github.com/poine/these_ricardo/blob/main/src/dual_no_load.py)
 
 <figure>
@@ -175,3 +190,12 @@ $$
 	<figcaption>Fig1. - ramp</figcaption>
 </figure>
 [code](https://github.com/poine/these_ricardo/blob/main/src/dual_no_load_test_2.py)
+
+
+#### Master slave control
+<figure>
+	<img src="plots/dual_no_load__ms_ctl_0.apng" alt="master slave control" width="512">
+	<img src="plots/dual_no_load__ms_ctl_0_chrono.png" alt="master slave control" width="512">
+	<figcaption>Fig1. - master slave control</figcaption>
+</figure>
+[code](https://github.com/poine/these_ricardo/blob/main/src/dual_no_load_test_3.py)

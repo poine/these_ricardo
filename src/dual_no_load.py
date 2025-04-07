@@ -45,29 +45,14 @@ class PVT:
         ct1, st1 = np.cos(X[PVT.s_th]), np.sin(X[PVT.s_th])
         ct2, st2 = np.cos(X[PVT.s_th2]), np.sin(X[PVT.s_th2])
 
-        if 0:
-            A = np.array([[ 1,     0, -self.P.lm2r*sph],
-                          [ 0,     1,  self.P.lm2r*cph],
-                          [-sph, cph,  self.P.l]])
-            invA = np.linalg.inv(A)
-
-        
-        
-            xd, zd, phd = X[PVT.s_xd], X[PVT.s_zd], X[PVT.s_phd]
-            ut2b = (U[PVT.i_fl1]+U[PVT.i_fr1])/self.P.m2
-            B = np.array([[self.P.lm2r*phd**2*cph         -ut1*st1-ut2*st2],
-                          [self.P.lm2r*phd**2*sph-self.P.g+ut1*ct1+ut2*ct2],
-                          [-self.P.g*cph+ut2b*np.cos(X[PVT.s_ph]+X[PVT.s_th2])]])
-            xdd, zdd, phdd =  (invA@B).flatten()
-        else:
-            phd = X[PVT.s_phd]
-            phdd =  self.P.m1/self.P.l*ut2*np.cos(X[PVT.s_ph]-X[PVT.s_th2])-self.P.m2/self.P.l*ut1*np.cos(X[PVT.s_ph]-X[PVT.s_th])
-            xdd = -ut1*st1 -ut2*st2+self.P.lm2r*(phdd*sph+phd**2*cph)
-            zdd = ut1*ct1 +ut2*ct2 -self.P.g -self.P.lm2r*(phdd*cph-phd**2*sph)
+        phd = X[PVT.s_phd]
+        phdd =  self.P.m1/self.P.l*ut2*np.cos(X[PVT.s_ph]-X[PVT.s_th2])-self.P.m2/self.P.l*ut1*np.cos(X[PVT.s_ph]-X[PVT.s_th])
+        xdd = -ut1*st1 -ut2*st2+self.P.lm2r*(phdd*sph+phd**2*cph)
+        zdd = ut1*ct1 +ut2*ct2 -self.P.g -self.P.lm2r*(phdd*cph-phd**2*sph)
             
         Xd = np.zeros(PVT.s_size)
         Xd[PVT.slice_kin] = X[PVT.slice_dyn]
-        #breakpoint()
+        
         Xd[PVT.s_xd:PVT.s_zd+1] = xdd, zdd
         Xd[PVT.s_phd] = phdd
         Xd[PVT.s_thd] = ud1

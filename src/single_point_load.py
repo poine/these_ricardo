@@ -2,7 +2,7 @@
 
 import numpy as np, scipy.integrate
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+#import matplotlib.animation as animation
 
 #from . import misc
 import misc_utils as mu
@@ -36,6 +36,7 @@ class Param:
 
 class PVTP:
     s_x, s_z, s_th, s_ph, s_xd, s_zd, s_thd, s_phd, s_size = range(9) # state vector components
+    s_slice_pos, s_slice_vel = slice(2), slice(4,6)
     i_f1, i_f2, i_size =  range(3) # input vector components
     
     def __init__(self, P=None):
@@ -96,10 +97,22 @@ def plot_trajectory(time, X, U, figure=None, axes=None):
     return figure, axes
 
 
+#
+# Animations
+#
+import matplotlib.animation as animation
+def extrema(arr, d=0): return np.min(arr)-d, np.max(arr)+d
+def compute_extends(X, P):
+    m_pos = X[:,PVTP.s_slice_pos]
+    t_pos = X[:,PVTP.s_slice_pos] + 2*P.P.l*np.array([np.cos(X[:,PVTP.s_ph]), np.sin(X[:,PVTP.s_ph])]).T
+    (x_min, x_max), (y_min, y_max) = [extrema(np.hstack((m_pos[:,i], t_pos[:,i])), 1.5*P.P.L) for i in range(2)]
+    return (x_min, x_max), (y_min, y_max)
+def subsample(l): # FIXME hardcoded 100Hz -> 25fps 
+    return [_l[::4] if _l is not None else None for _l in l]
 
-def animate(time, X, U, P, figure=None, ax=None):
-    _xmin, _xmax = -5, 5
-    _ymin, _ymax = -2, 2
+def animate(time, X, U, P, Ysp=None, figure=None, ax=None):
+    time, X, U, Ysp =  subsample((time, X, U, Ysp))
+    (_xmin, _xmax), (_ymin, _ymax) = compute_extends(X, P)
     fig = figure or plt.figure(figsize=(10., 5.))
     if ax is None:
         ax = fig.add_subplot(111, aspect='equal', autoscale_on=False, xlim=(_xmin, _xmax),

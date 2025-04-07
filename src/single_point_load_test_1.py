@@ -25,7 +25,6 @@ def test_open_loop(save=False):
         mu.save_anim(mu.PLOT_DIR+'/single_point_load__open_loop.apng', anim)
     plt.show()
 
-
     
 if __name__ == "__main__":
     test_open_loop(save='-s' in sys.argv)

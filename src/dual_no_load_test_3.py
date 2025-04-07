@@ -66,7 +66,7 @@ def cst(t):
     X[PVT.PVT.s_x] = -0.25
     return X
 
-def sim_feedback(sp, dt=0.01):
+def sim_feedback(sp, dt=0.01, save=None):
     P = PVT.PVT()
     X0, Ue = np.zeros(P.s_size), P.Ue
 
@@ -88,14 +88,19 @@ def sim_feedback(sp, dt=0.01):
         U[i] =  ms_feedback(X[i], Xsp[i], Ue, P)
         if i < len(time)-1: X[i+1] = P.disc_dyn(X[i], U[i], dt)
     PVT.plot_trajectory(time, X, U)
+    if save is not None:
+        plt.savefig(mu.PLOT_DIR+f'/dual_no_load__ms_ctl_{save}_chrono.png') 
     anim = PVT.animate(time, X, U, P, Xsp)
+    if save is not None:
+        mu.save_anim(mu.PLOT_DIR+f'/dual_no_load__ms_ctl_{save}.apng', anim)
     plt.show()
     
-def main(exp):
+def main(exp, save):
     logging.basicConfig(level=logging.INFO)
     #sim_feedback(cst)
-    sim_feedback(stepx)
+    sim_feedback(stepx, save='0')
     
 if __name__ == "__main__":
     exp = 0 if len(sys.argv)<2 else int(sys.argv[1])
-    main(exp)
+    save  = '-s' in sys.argv
+    main(exp, save)
