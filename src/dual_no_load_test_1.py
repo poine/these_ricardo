@@ -35,7 +35,7 @@ def main(save=False, dt=0.01):
         U[i] =  stepU(P, time[i])
         if i<len(time)-1: X[i+1] = P.disc_dyn(X[i], U[i], dt)
     PVT.plot_trajectory(time, X, U)
-    anim = PVT.animate(time, X, U, P)
+    anim = PVT.Animation(time, X, U, P).generate()
     if save:
         mu.save_anim(mu.PLOT_DIR+'/dual_no_load__open_loop.apng', anim)
     plt.show()

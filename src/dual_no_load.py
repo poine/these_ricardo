@@ -9,8 +9,7 @@ import numpy as np, scipy.integrate
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-import misc_utils as mu
-
+import misc_utils as mu, anim_utils
 
 class Param:
     def __init__(self):
@@ -101,57 +100,33 @@ def plot_trajectory(time, X, U, figure=None, axes=None):
 #
 # Animations
 #
-def extrema(arr, d=0): return np.min(arr)-d, np.max(arr)+d
-def compute_extends(X, P):
-    m_pos = X[:,PVT.slice_pos]
-    s_pos = m_pos + P.P.l*np.array([np.cos(X[:,PVT.s_ph]), np.sin(X[:,PVT.s_ph])]).T
-    (x_min, x_max), (y_min, y_max) = [extrema(np.hstack((m_pos[:,i], s_pos[:,i])), 1.2*P.P.d1) for i in range(2)]
-    return (x_min, x_max), (y_min, y_max)
 
-def subsample(l): return [_l[::4] if _l is not None else None for _l in l]  # FIXME hardcoded 100Hz -> 25fps     
-def animate(time, X, U, P, Xsp=None, figure=None, ax=None):
-    time, X, U, Xsp =  subsample((time, X, U, Xsp))
-    (_xmin, _xmax), (_ymin, _ymax) = compute_extends(X, P)
-    #_xmin, _xmax, _ymin, _ymax = -0.75, 1.75, -0.5, 0.5
-    fig = figure or plt.figure(figsize=(10., 4.))
-    if ax is None:
-        ax = fig.add_subplot(111, aspect='equal', autoscale_on=False, xlim=(_xmin, _xmax),
-                             ylim=(_ymin, _ymax), facecolor=(0.5, 0.9, 0.9))
-    _time_template = 'time = {:0.1f}s'
-    _time_text = ax.text(0.025, 0.92, 'N/A', transform=ax.transAxes)
-    _line_body1, = ax.plot([], [], 'o-', lw=3, color='r', zorder=1)
-    _line_body2, = ax.plot([], [], 'o-', lw=3, color='g', zorder=1)
-    _line_tether, = ax.plot([], [], 'o-', lw=1, color='b', zorder=2)
-    _line_sp, = ax.plot([], [], 'o--', lw=1, color='k', alpha=0.5, zorder=2)
-    _lines = (_line_body1, _line_body2, _line_tether, _line_sp)
-    
-    def draw_quad(line, pos, theta, d):
-        n = [d*np.cos(theta), d*np.sin(theta)]
-        p1, p2 = pos + n, pos-n
-        line.set_data([p1[0], p2[0]], [p1[1], p2[1]])
-    
+class Animation(anim_utils.Animation):
+    def setup_drawing(self):
+        self._line_body1, = self.ax.plot([], [], 'o-', lw=3, color='r', zorder=1)
+        self._line_body2, = self.ax.plot([], [], 'o-', lw=3, color='g', zorder=1)
+        self._line_tether, = self.ax.plot([], [], 'o-', lw=1, color='b', zorder=2)
+        self._line_sp, = self.ax.plot([], [], 'o--', lw=1, color='k', alpha=0.5, zorder=2)
+        self._lines = (self._line_body1, self._line_body2, self._line_tether, self._line_sp)
+        return self._lines
         
-    def init():
-        for _l in _lines: _l.set_data([], [])
-        return (_time_text,) +  _lines
-
-    def animate(i):
-        p0 = X[i, P.slice_pos]
-        n = np.array([np.cos(X[i, P.s_ph]), np.sin(X[i, P.s_ph])]) # tether aligned unit vector
-        p1 = p0 + P.P.l*n
-        _line_tether.set_data([p0[0], p1[0]], [p0[1], p1[1]])
-        draw_quad(_line_body1, p0, X[i, P.s_th], P.P.d1 )
-        draw_quad(_line_body2, p1, X[i, P.s_th2], P.P.d2 )
-        if Xsp is not None:
-            p0, phi0 = Xsp[i, P.slice_pos], Xsp[i, P.s_ph]
+    def animate_drawing(self, i):
+        p0 = self.X[i, PVT.slice_pos] # center of quad 1
+        n = np.array([np.cos(self.X[i, PVT.s_ph]), np.sin(self.X[i, PVT.s_ph])]) # tether aligned unit vector
+        p1 = p0 + self.P.P.l*n # center of quad 2
+        self._line_tether.set_data([p0[0], p1[0]], [p0[1], p1[1]])
+        self.draw_quad(self._line_body1, p0, self.X[i, PVT.s_th], self.P.P.d1 )
+        self.draw_quad(self._line_body2, p1, self.X[i, PVT.s_th2], self.P.P.d2 )
+        if self.Xsp is not None:
+            p0, phi0 = self.Xsp[i, PVT.slice_pos], self.Xsp[i, PVT.s_ph]
             n = np.array([np.cos(phi0), np.sin(phi0)]) # setpoint tether aligned unit vector
-            p2 = p0 + P.P.l*n
-            _line_sp.set_data([p0[0], p2[0]], [p0[1], p2[1]])
-        _time_text.set_text(_time_template.format(i * dt))
-        return (_time_text,) +  _lines
+            p2 = p0 + self.P.P.l*n
+            self._line_sp.set_data([p0[0], p2[0]], [p0[1], p2[1]])
+        return self._lines
 
-    dt = time[1]-time[0]; dt_mili = dt*1000
-    anim = animation.FuncAnimation(fig, animate, np.arange(1, len(time)),
-                                   interval=dt_mili, blit=True, init_func=init, repeat_delay=200)
-    
-    return anim
+    def compute_extends(self, X, P):
+        m_pos = self.X[:,PVT.slice_pos]
+        s_pos = m_pos + self.P.P.l*np.array([np.cos(X[:,PVT.s_ph]), np.sin(X[:,PVT.s_ph])]).T
+        (x_min, x_max), (y_min, y_max) = [anim_utils.extrema(np.hstack((m_pos[:,i], s_pos[:,i])), 1.2*P.P.d1) for i in range(2)]
+        return (x_min, x_max), (y_min, y_max)
+         

@@ -99,7 +99,8 @@ def sim_feedback(sp, dt=0.01, savefile=None):
         U[i] =  feedback_control(X[i], Xsp[i], Ue, K)
         if i < len(time)-1: X[i+1] = P.disc_dyn(X[i], U[i], dt)
     PVT.plot_trajectory(time, X, U)
-    anim = PVT.animate(time, X, U, P, Xsp)
+    anim = PVT.Animation(time, X, U, P, Xsp).generate()
+
     if savefile is not None:
         mu.save_anim(mu.PLOT_DIR+'/'+savefile, anim)
     plt.show()

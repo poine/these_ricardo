@@ -78,7 +78,7 @@ def sim_feedback(sp, dt=0.01, save=None):
     X0[PVT.PVT.s_zd] = 0.05
     X0[PVT.PVT.s_ph] = np.deg2rad(10)
     X0[PVT.PVT.s_phd] = -np.deg2rad(1)
-    time = np.arange(0., 7., dt)
+    time = np.arange(0., 8., dt)
     X = np.zeros((len(time), P.s_size))
     Xsp = np.zeros((len(time), P.s_size))
     U = np.zeros((len(time), P.i_size))
@@ -90,7 +90,9 @@ def sim_feedback(sp, dt=0.01, save=None):
     PVT.plot_trajectory(time, X, U)
     if save is not None:
         plt.savefig(mu.PLOT_DIR+f'/dual_no_load__ms_ctl_{save}_chrono.png') 
-    anim = PVT.animate(time, X, U, P, Xsp)
+    #anim = PVT.animate(time, X, U, P, Xsp)
+    anim = PVT.Animation(time, X, U, P, Xsp).generate()
+
     if save is not None:
         mu.save_anim(mu.PLOT_DIR+f'/dual_no_load__ms_ctl_{save}.apng', anim)
     plt.show()
