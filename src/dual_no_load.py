@@ -29,7 +29,7 @@ class Param:
         self.lm2r = self.l*self.m2r
 
 class PVT:
-    s_x, s_z, s_th, s_ph, s_th2, s_xd, s_zd, s_thd, s_phd, s_th2d, s_size  = range(11) # state vector components
+    s_x, s_z, s_ph, s_th, s_th2, s_xd, s_zd, s_phd, s_thd, s_th2d, s_size  = range(11) # state vector components
     slice_pos, slice_vel, slice_kin, slice_dyn = slice(2), slice(5, 7), slice(5), slice(5, 11)
     i_fl1, i_fr1, i_fl2, i_fr2, i_size =  range(5)                                     # input vector components
 
@@ -37,7 +37,7 @@ class PVT:
         self.P = P if P is not None else Param()
         self.Ue = self.P.g*np.array([self.P.m1/2, self.P.m1/2, self.P.m2/2, self.P.m2/2])
 
-    def dyn(self, X, t, U):
+    def dyn_wrong(self, X, t, U):
         ut1, ut2 = (U[PVT.i_fl1]+U[PVT.i_fr1])/self.P.mt, (U[PVT.i_fl2]+U[PVT.i_fr2])/self.P.mt
         ud1, ud2 = (-U[PVT.i_fl1]+U[PVT.i_fr1])*self.P.dovJ1, (-U[PVT.i_fl2]+U[PVT.i_fr2])*self.P.dovJ2
         cph, sph = np.cos(X[PVT.s_ph]), np.sin(X[PVT.s_ph])
@@ -58,6 +58,31 @@ class PVT:
         Xd[PVT.s_th2d] = ud2
         return Xd
 
+    def dyn(self, X, t, U):
+        m1, m2, mt, l, g = self.P.m1, self.P.m2, self.P.mt, self.P.l, self.P.g
+        F1, F2 = U[0]+U[1], U[2]+U[3]
+        ph, th1, th2, phd = X[PVT.s_ph], X[PVT.s_th], X[PVT.s_th2], X[PVT.s_phd]
+        phmth1, phmth2 = ph-th1, ph-th2
+        cphmth1, sphmth1 = np.cos(phmth1), np.sin(phmth1)
+        cphmth2, sphmth2 = np.cos(phmth2), np.sin(phmth2)
+        cph, sph = np.cos(X[PVT.s_ph]), np.sin(X[PVT.s_ph])
+        cth1, sth1 = np.cos(X[PVT.s_th]), np.sin(X[PVT.s_th])
+        cth2, sth2 = np.cos(X[PVT.s_th2]), np.sin(X[PVT.s_th2])
+        #xdd = (-F1*sth1 -F2*sth2 +l*m2*cph*phd**2 + (F1*m2*cphmth1-F2*m1*cphmth2)*sph/m2)/mt
+        #zdd = (F1*cth1 + F2*cth2  -g*mt +...TODO
+        phdd = (F1*m2*cphmth1 - F2*m1*cphmth2)/(l*m2**2)
+        # version using phdd
+        xdd = (-F1*sth1 -F2*sth2 +l*m2*(sph*phdd + cph*phd**2))/mt
+        zdd = (F1*cth1 + F2*cth2 -g*mt +l*m2*sph*phd**2 -l*m2*cph*phdd)/mt
+        th1dd = (-U[0]+U[1])*self.P.dovJ1
+        th2dd = (-U[2]+U[3])*self.P.dovJ2
+        
+        Xd = np.zeros(PVT.s_size)
+        Xd[PVT.slice_kin] = X[PVT.slice_dyn]
+        Xd[PVT.slice_dyn] = xdd, zdd, phdd, th1dd, th2dd
+        return Xd
+        
+    
     def disc_dyn(self, Xk, Uk, dt):
         _unused, Xkp1 = scipy.integrate.odeint(self.dyn, Xk, [0, dt], args=(Uk,))
         return Xkp1
@@ -66,17 +91,18 @@ class PVT:
         Xe = Xe if Xe is not None else np.zeros(PVT.s_size)
         return mu.num_jacobian(Xe, self.Ue, self.dyn)
 
-    def master_state(X): # x, z, theta, xd, zd, thd
-        return np.hstack((X[:PVT.s_th+1], X[PVT.s_xd:PVT.s_thd+1]))
-    def slave_state(X):  # phi, theta2, phid, theta2d
-        return np.hstack((X[PVT.s_ph:PVT.s_th2+1], X[PVT.s_phd:PVT.s_th2d+1]))
+    # FIXME orders
+    # def master_state(X): # x, z, theta, xd, zd, thd
+    #     return np.hstack((X[:PVT.s_th+1], X[PVT.s_xd:PVT.s_thd+1]))
+    # def slave_state(X):  # phi, theta2, phid, theta2d
+    #     return np.hstack((X[PVT.s_ph:PVT.s_th2+1], X[PVT.s_phd:PVT.s_th2d+1]))
 
-    def slave_state2(self, X):
-        #
-        cph, sph, phd = np.cos(X[PVT.s_ph]), np.sin(X[PVT.s_ph]), X[PVT.s_phd]
-        x2, z2 = X[PVT.slice_pos] + self.P.l*np.array([cph, sph])
-        x2d, z2d = X[PVT.slice_vel] + self.P.l*phd*np.array([-sph, cph])                         
-        return np.array([x2, z2, X[PVT.s_th2], x2d, z2d, X[PVT.s_th2d]])
+    # def slave_state2(self, X):
+    #     #
+    #     cph, sph, phd = np.cos(X[PVT.s_ph]), np.sin(X[PVT.s_ph]), X[PVT.s_phd]
+    #     x2, z2 = X[PVT.slice_pos] + self.P.l*np.array([cph, sph])
+    #     x2d, z2d = X[PVT.slice_vel] + self.P.l*phd*np.array([-sph, cph])                         
+    #     return np.array([x2, z2, X[PVT.s_th2], x2d, z2d, X[PVT.s_th2d]])
 
 def plot_trajectory(time, X, U, figure=None, axes=None):
     figure = plt.figure(tight_layout=True, figsize=[8., 6.]) if figure is None else figure

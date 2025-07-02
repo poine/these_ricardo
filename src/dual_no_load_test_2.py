@@ -70,8 +70,8 @@ def feedback_control(X, Xsp, Ue, K):
 
 def sim_feedback(sp, dt=0.01, savefile=None):
     P = PVT.PVT()
-    Q = np.diag([3., 7.,0.5, 10., 0.5,
-                 0.25, 0.25, 0.005, 0.25, 0.005])
+    Q = np.diag([3., 7.,10., 0.5, 2.,
+                 0.25, 0.25, 0.25, 0.005, 0.01])
     R = np.diag([0.5, 0.5, 0.5, 0.5])
     def compute_gain(_X, _U, _v=False):
         _Xe = np.array(_X)

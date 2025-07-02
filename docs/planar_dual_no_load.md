@@ -145,7 +145,7 @@ $$
 $$
 
 $$
-l \ddot{\phi} - \sin\phi \ddot{x} + \cos \phi \ddot{z} = -\cos\phi g + \cos(\phi+\theta_2) \frac{f_{l2}+f_{r2}}{m_2}
+l \ddot{\phi} - \sin\phi \ddot{x} + \cos \phi \ddot{z} = -\cos\phi g + \cos(\phi-\theta_2) \frac{f_{l2}+f_{r2}}{m_2}
 $$
 
 
